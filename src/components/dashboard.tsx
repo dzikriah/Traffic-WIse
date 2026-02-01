@@ -78,7 +78,11 @@ export default function Dashboard() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTrafficData((current) => {
-        runStep(current);
+        // Fire-and-forget the async update. It will set state when it's done.
+        (async () => {
+          await runStep(current);
+        })();
+        // Return the existing state immediately to keep the updater pure.
         return current;
       });
     }, 7000);
