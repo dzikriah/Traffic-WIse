@@ -1,8 +1,5 @@
 'use server';
 
-import { determineCongestionFactor } from '@/ai/flows/adjust-toll-gate-dynamically';
-import { explainTrafficChange } from '@/ai/flows/explain-traffic-changes';
-import { simulateTrafficFlow } from '@/ai/flows/simulate-traffic-volume-variation';
 import type {
   TrafficData,
   TrafficStatus,
@@ -18,10 +15,10 @@ const getTrafficStatus = (totalVolume: number): TrafficStatus => {
 const initialTrafficData: TrafficData = {
   timestamp: '',
   location: 'Jl. Jenderal Sudirman, Jakarta',
-  total_volume: 0,
-  car_volume: 0,
-  motorcycle_volume: 0,
-  average_speed: 0,
+  total_volume: 80,
+  car_volume: 50,
+  motorcycle_volume: 30,
+  average_speed: 45,
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
@@ -30,67 +27,56 @@ const initialTrafficData: TrafficData = {
 export async function runSimulationStep(
   previousData: TrafficData | null
 ): Promise<TrafficData> {
-  const currentData = previousData || initialTrafficData;
+  const currentData = previousData?.total_volume ? previousData : initialTrafficData;
 
-  try {
-    // 1. Simulate new traffic volumes and speed
-    const simOutput = await simulateTrafficFlow({
-      location: currentData.location,
-      currentCarVolume: currentData.car_volume,
-      currentMotorcycleVolume: currentData.motorcycle_volume,
-      currentAverageSpeed: currentData.average_speed,
-    });
+  // 1. Simulate new traffic volumes with randomness
+  const carChange = Math.floor(Math.random() * 20) - 10; // Fluctuation between -10 and +9
+  const motorcycleChange = Math.floor(Math.random() * 30) - 15; // Fluctuation between -15 and +14
 
-    const newCarVolume = Math.max(0, simOutput.newCarVolume);
-    const newMotorcycleVolume = Math.max(0, simOutput.newMotorcycleVolume);
-    const newAverageSpeed = Math.max(0, simOutput.newAverageSpeed);
-    const newTotalVolume = newCarVolume + newMotorcycleVolume;
+  let newCarVolume = currentData.car_volume + carChange;
+  let newMotorcycleVolume = currentData.motorcycle_volume + motorcycleChange;
 
-    // 2. Determine new traffic status
-    const newTrafficStatus = getTrafficStatus(newTotalVolume);
+  // Ensure volumes are within a realistic range
+  newCarVolume = Math.max(20, Math.min(newCarVolume, 250));
+  newMotorcycleVolume = Math.max(30, Math.min(newMotorcycleVolume, 350));
+  
+  const newTotalVolume = newCarVolume + newMotorcycleVolume;
 
-    // 3. Determine primary congestion factor
-    const { congestionFactor } = await determineCongestionFactor({
-      trafficStatus: newTrafficStatus,
-      carVolume: newCarVolume,
-      motorcycleVolume: newMotorcycleVolume,
-      averageSpeed: newAverageSpeed,
-    });
+  // 2. Simulate new average speed (inversely related to volume)
+  const baseSpeed = 70;
+  const reductionPerVehicle = 0.08;
+  let newAverageSpeed = baseSpeed - (newTotalVolume * reductionPerVehicle);
+  newAverageSpeed += Math.floor(Math.random() * 10) - 5; // Add some random variance
+  newAverageSpeed = Math.max(5, Math.min(newAverageSpeed, 60)); // Clamp speed within 5-60 km/h
 
-    // 4. Get a human-readable explanation of the changes
-    const timestamp = new Date().toISOString();
-    const { explanation } = await explainTrafficChange({
-      location: currentData.location,
-      previousTotalVolume: currentData.total_volume,
-      currentTotalVolume: newTotalVolume,
-      previousAverageSpeed: currentData.average_speed,
-      currentAverageSpeed: newAverageSpeed,
-      previousTrafficStatus: currentData.traffic_status,
-      currentTrafficStatus: newTrafficStatus,
-      timestamp: timestamp,
-    });
+  // 3. Determine new traffic status
+  const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-    // 5. Return the new comprehensive traffic data
-    return {
-      timestamp,
-      location: currentData.location,
-      total_volume: newTotalVolume,
-      car_volume: newCarVolume,
-      motorcycle_volume: newMotorcycleVolume,
-      average_speed: Math.round(newAverageSpeed),
-      traffic_status: newTrafficStatus,
-      congestion_factor: congestionFactor,
-      explanation,
-    };
-  } catch (error) {
-    console.error('Error during simulation step:', error);
-    return {
-      ...currentData,
-      timestamp: new Date().toISOString(),
-      explanation:
-        'An error occurred while simulating traffic changes. Using last known state.',
-    };
-  }
+  // 4. Generate a random congestion analysis based on status
+  const congestionAnalyses = [
+    { factor: 'Normal Traffic Flow', explanation: 'Traffic is moving as expected for this time of day without major incidents.' },
+    { factor: 'High Volume of Cars', explanation: 'An increased number of cars is the primary reason for the current traffic density.' },
+    { factor: 'Motorcycle Density', explanation: 'A large number of motorcycles is currently navigating the intersection, affecting flow.' },
+    { factor: 'Intersection Bottleneck', explanation: 'Delays are occurring as vehicles pass through the intersection, creating a bottleneck.' },
+    { factor: 'Peak Hour Rush', explanation: 'Typical rush hour conditions are leading to increased vehicle volume and slower speeds.' },
+  ];
+  
+  const analysis = newTrafficStatus === 'Smooth'
+    ? congestionAnalyses[0]
+    : congestionAnalyses[Math.floor(Math.random() * (congestionAnalyses.length - 1)) + 1];
+
+  // 5. Return the new comprehensive traffic data
+  return {
+    timestamp: new Date().toISOString(),
+    location: currentData.location,
+    total_volume: newTotalVolume,
+    car_volume: newCarVolume,
+    motorcycle_volume: newMotorcycleVolume,
+    average_speed: Math.round(newAverageSpeed),
+    traffic_status: newTrafficStatus,
+    congestion_factor: analysis.factor,
+    explanation: analysis.explanation,
+  };
 }
 
 export async function getRealtimeVehicleEvents(
