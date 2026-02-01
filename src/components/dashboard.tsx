@@ -20,14 +20,14 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const initialTrafficData: TrafficData = {
-  timestamp: new Date().toISOString(),
+  timestamp: '',
   location: 'Jl. Jenderal Sudirman, Jakarta',
-  total_volume: 120,
-  car_volume: 70,
-  motorcycle_volume: 50,
-  average_speed: 45,
+  total_volume: 0,
+  car_volume: 0,
+  motorcycle_volume: 0,
+  average_speed: 0,
   traffic_status: 'Smooth',
-  congestion_factor: 'Normal Flow',
+  congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
 };
 
@@ -141,7 +141,11 @@ export default function Dashboard() {
         />
         <TrafficCard
           title="Last Updated"
-          value={new Date(trafficData.timestamp).toLocaleTimeString()}
+          value={
+            isLoading || !trafficData.timestamp
+              ? '...'
+              : new Date(trafficData.timestamp).toLocaleTimeString()
+          }
           icon={<Clock className="h-6 w-6 text-muted-foreground" />}
           isLoading={isLoading}
         />
