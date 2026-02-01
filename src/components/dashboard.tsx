@@ -39,7 +39,12 @@ export default function Dashboard() {
   const [history, setHistory] = useState<{ time: string; cars: number; motorcycles: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const runStep = useCallback(
     async (currentData: TrafficData) => {
@@ -162,7 +167,7 @@ export default function Dashboard() {
           <TrafficCard
             title="Last Updated"
             value={
-              isLoading || !trafficData.timestamp
+              !isClient || isLoading || !trafficData.timestamp
                 ? '...'
                 : new Date(trafficData.timestamp).toLocaleTimeString()
             }
