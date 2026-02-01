@@ -36,7 +36,7 @@ const initialTrafficData: TrafficData = {
 export default function Dashboard() {
   const [trafficData, setTrafficData] =
     useState<TrafficData>(initialTrafficData);
-  const [history, setHistory] = useState<{ time: string; volume: number }[]>([]);
+  const [history, setHistory] = useState<{ time: string; cars: number; motorcycles: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const { toast } = useToast();
@@ -59,7 +59,7 @@ export default function Dashboard() {
           second: '2-digit',
         });
         setHistory((prev) =>
-          [...prev, { time, volume: newData.total_volume }].slice(-20)
+          [...prev, { time, cars: newData.car_volume, motorcycles: newData.motorcycle_volume }].slice(-20)
         );
       } catch (error) {
         console.error('Simulation step failed:', error);
