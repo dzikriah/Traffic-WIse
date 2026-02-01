@@ -15,10 +15,10 @@ const getTrafficStatus = (totalVolume: number): TrafficStatus => {
 const initialTrafficData: TrafficData = {
   timestamp: '',
   location: 'Jl. Jenderal Sudirman, Jakarta',
-  total_volume: 80,
-  car_volume: 50,
-  motorcycle_volume: 30,
-  average_speed: 45,
+  total_volume: 0,
+  car_volume: 0,
+  motorcycle_volume: 0,
+  average_speed: 0,
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
@@ -52,18 +52,26 @@ export async function runSimulationStep(
   // 3. Determine new traffic status
   const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-  // 4. Generate a random congestion analysis based on status
-  const congestionAnalyses = [
-    { factor: 'Normal Traffic Flow', explanation: 'Traffic is moving as expected for this time of day without major incidents.' },
-    { factor: 'High Volume of Cars', explanation: 'An increased number of cars is the primary reason for the current traffic density.' },
-    { factor: 'Motorcycle Density', explanation: 'A large number of motorcycles is currently navigating the intersection, affecting flow.' },
-    { factor: 'Intersection Bottleneck', explanation: 'Delays are occurring as vehicles pass through the intersection, creating a bottleneck.' },
-    { factor: 'Peak Hour Rush', explanation: 'Typical rush hour conditions are leading to increased vehicle volume and slower speeds.' },
-  ];
+  // 4. Generate a varied congestion analysis based on status
+  const analysisByStatus = {
+    Smooth: [
+      { factor: 'Normal Flow', explanation: 'Traffic is moving smoothly with no significant delays.' },
+      { factor: 'Light Traffic', explanation: 'Vehicle volume is low, resulting in free-flowing traffic.' },
+    ],
+    Moderate: [
+      { factor: 'Increasing Volume', explanation: 'A growing number of vehicles is causing slight delays as the road gets busier.' },
+      { factor: 'Minor Congestion', explanation: 'Some congestion is present around intersections, but traffic is still moving steadily.' },
+      { factor: 'Steady Flow', explanation: 'Traffic is consistent, with vehicles moving at a reduced but steady pace.' },
+    ],
+    Heavy: [
+      { factor: 'Heavy Congestion', explanation: 'High vehicle volume is causing significant delays and slow-moving traffic.' },
+      { factor: 'Peak Hour Traffic', explanation: 'The road is experiencing typical peak hour conditions, leading to severe congestion.' },
+      { factor: 'Near Standstill', explanation: 'Traffic is nearly at a standstill, with very slow movement and long waits.' },
+    ]
+  };
   
-  const analysis = newTrafficStatus === 'Smooth'
-    ? congestionAnalyses[0]
-    : congestionAnalyses[Math.floor(Math.random() * (congestionAnalyses.length - 1)) + 1];
+  const possibleAnalyses = analysisByStatus[newTrafficStatus];
+  const analysis = possibleAnalyses[Math.floor(Math.random() * possibleAnalyses.length)];
 
   // 5. Return the new comprehensive traffic data
   return {
