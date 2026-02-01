@@ -11,7 +11,7 @@ import {
   MapPin,
   TrafficCone,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import TrafficCard from '@/components/traffic-card';
 import TrafficChart from '@/components/traffic-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,57 +46,54 @@ export default function Dashboard() {
     setIsClient(true);
   }, []);
 
-  const runStep = useCallback(
-    async (currentData: TrafficData) => {
-      const shouldSetLoading = activeTab === 'dashboard';
-      if (shouldSetLoading && !isLoading) {
-        setIsLoading(true);
-      } else if (activeTab !== 'dashboard') {
+  const trafficDataRef = useRef(trafficData);
+  trafficDataRef.current = trafficData;
+
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
+
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+
+  const runStep = useCallback(async () => {
+    const forDashboard = activeTabRef.current === 'dashboard';
+    if (forDashboard && !isLoadingRef.current) {
+      setIsLoading(true);
+    } else if (!forDashboard) {
+      setIsLoading(false);
+    }
+
+    try {
+      const newData = await runSimulationStep(trafficDataRef.current);
+      setTrafficData(newData);
+      const time = new Date(newData.timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      setHistory((prev) =>
+        [...prev, { time, cars: newData.car_volume, motorcycles: newData.motorcycle_volume }].slice(-20)
+      );
+    } catch (error) {
+      console.error('Simulation step failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Simulation Error',
+        description: 'Could not fetch new traffic data.',
+      });
+    } finally {
+      if (forDashboard) {
         setIsLoading(false);
       }
-
-      try {
-        const newData = await runSimulationStep(currentData);
-        setTrafficData(newData);
-        const time = new Date(newData.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        });
-        setHistory((prev) =>
-          [...prev, { time, cars: newData.car_volume, motorcycles: newData.motorcycle_volume }].slice(-20)
-        );
-      } catch (error) {
-        console.error('Simulation step failed:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Simulation Error',
-          description: 'Could not fetch new traffic data.',
-        });
-      } finally {
-        if (shouldSetLoading) setIsLoading(false);
-      }
-    },
-    [toast, isLoading, activeTab]
-  );
+    }
+  }, [toast]);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setTrafficData((current) => {
-        // Fire-and-forget the async update. It will set state when it's done.
-        (async () => {
-          await runStep(current);
-        })();
-        // Return the existing state immediately to keep the updater pure.
-        return current;
-      });
-    }, 7000);
-
-    runStep(trafficData);
+    runStep(); // Initial run
+    const intervalId = setInterval(runStep, 7000);
 
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [runStep]);
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
