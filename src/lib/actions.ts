@@ -30,8 +30,8 @@ export async function runSimulationStep(
   const currentData = previousData?.total_volume ? previousData : initialTrafficData;
 
   // 1. Simulate new traffic volumes with randomness
-  const carChange = Math.floor(Math.random() * 20) - 10; // Fluctuation between -10 and +9
-  const motorcycleChange = Math.floor(Math.random() * 30) - 15; // Fluctuation between -15 and +14
+  const carChange = Math.floor(Math.random() * 50) - 20; // Fluctuation between -20 and +29
+  const motorcycleChange = Math.floor(Math.random() * 70) - 30; // Fluctuation between -30 and +39
 
   let newCarVolume = currentData.car_volume + carChange;
   let newMotorcycleVolume = currentData.motorcycle_volume + motorcycleChange;
