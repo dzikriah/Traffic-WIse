@@ -9,7 +9,7 @@ export default function Home() {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Route className="h-5 w-5" />
           </div>
-          <span className="font-headline">TrafficWise</span>
+          <span className="font-headline">Jakarta Traffic</span>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">

@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'TrafficWise',
-  description: 'Real-time traffic simulation and analysis',
+  title: 'Jakarta Traffic Watch',
+  description: 'Real-time traffic simulation and analysis for Jakarta',
 };
 
 export default function RootLayout({

@@ -1,62 +1,72 @@
 'use server';
 
 /**
- * @fileOverview Simulates changes in vehicle volume within a defined range (+/- 5 to +/- 20 vehicles) using GenAI.
+ * @fileOverview Simulates changes in traffic flow for cars and motorcycles in a city environment.
  *
- * - simulateTrafficVolumeVariation - A function that simulates traffic volume variation.
- * - SimulateTrafficVolumeVariationInput - The input type for the simulateTrafficVolumeVariation function.
- * - SimulateTrafficVolumeVariationOutput - The return type for the simulateTrafficVolumeVariation function.
+ * - simulateTrafficFlow - A function that simulates traffic flow variation.
+ * - SimulateTrafficFlowInput - The input type for the simulateTrafficFlow function.
+ * - SimulateTrafficFlowOutput - The return type for the simulateTrafficFlow function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SimulateTrafficVolumeVariationInputSchema = z.object({
-  currentVehicleVolume: z.number().describe('The current vehicle volume.'),
+const SimulateTrafficFlowInputSchema = z.object({
+  location: z.string().describe('The current location in Jakarta.'),
+  currentCarVolume: z.number().describe('The current number of cars.'),
+  currentMotorcycleVolume: z.number().describe('The current number of motorcycles.'),
+  currentAverageSpeed: z.number().describe('The current average speed in km/h.'),
 });
-export type SimulateTrafficVolumeVariationInput = z.infer<
-  typeof SimulateTrafficVolumeVariationInputSchema
+export type SimulateTrafficFlowInput = z.infer<
+  typeof SimulateTrafficFlowInputSchema
 >;
 
-const SimulateTrafficVolumeVariationOutputSchema = z.object({
-  newVehicleVolume: z
+const SimulateTrafficFlowOutputSchema = z.object({
+  newCarVolume: z
     .number()
-    .describe('The new vehicle volume after the simulated change.'),
-  explanation: z.string().describe('Explanation of why traffic volume changed.'),
+    .describe('The new car volume after the simulated change.'),
+  newMotorcycleVolume: z
+    .number()
+    .describe('The new motorcycle volume after the simulated change.'),
+  newAverageSpeed: z
+    .number()
+    .describe('The new average speed in km/h after the simulated change.'),
+  explanation: z.string().describe('Brief explanation of the simulated traffic changes.'),
 });
-export type SimulateTrafficVolumeVariationOutput = z.infer<
-  typeof SimulateTrafficVolumeVariationOutputSchema
+export type SimulateTrafficFlowOutput = z.infer<
+  typeof SimulateTrafficFlowOutputSchema
 >;
 
-export async function simulateTrafficVolumeVariation(
-  input: SimulateTrafficVolumeVariationInput
-): Promise<SimulateTrafficVolumeVariationOutput> {
-  return simulateTrafficVolumeVariationFlow(input);
+export async function simulateTrafficFlow(
+  input: SimulateTrafficFlowInput
+): Promise<SimulateTrafficFlowOutput> {
+  return simulateTrafficFlowFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'simulateTrafficVolumeVariationPrompt',
-  input: {schema: SimulateTrafficVolumeVariationInputSchema},
-  output: {schema: SimulateTrafficVolumeVariationOutputSchema},
-  prompt: `You are a real-time traffic simulation system.
+  name: 'simulateTrafficFlowPrompt',
+  input: {schema: SimulateTrafficFlowInputSchema},
+  output: {schema: SimulateTrafficFlowOutputSchema},
+  prompt: `You are a real-time traffic simulation system for Jakarta.
 
-You will simulate a change in vehicle volume. The change should be between -20 and 20, and you should explain why the volume changed.
+You will simulate a realistic change in vehicle volume (cars and motorcycles) and average speed for the given location. The change should be plausible for a city environment, considering factors like time of day (though not explicitly given, you can infer general patterns), and random events.
 
-Current vehicle volume: {{{currentVehicleVolume}}}
+Current Location: {{{location}}}
+Current Car Volume: {{{currentCarVolume}}}
+Current Motorcycle Volume: {{{currentMotorcycleVolume}}}
+Current Average Speed: {{{currentAverageSpeed}}} km/h
 
-Respond with valid JSON:
-{
-  "newVehicleVolume": <new vehicle volume>,
-    "explanation": <explanation of why traffic volume changed>
-}
+Simulate a new state. Vehicle volumes should fluctuate realistically (e.g., increase during rush hour, decrease at night). Average speed is inversely related to volume. Ensure volume and speed are non-negative. Provide a brief, one-sentence explanation for the change.
+
+Respond with valid JSON.
 `,
 });
 
-const simulateTrafficVolumeVariationFlow = ai.defineFlow(
+const simulateTrafficFlowFlow = ai.defineFlow(
   {
-    name: 'simulateTrafficVolumeVariationFlow',
-    inputSchema: SimulateTrafficVolumeVariationInputSchema,
-    outputSchema: SimulateTrafficVolumeVariationOutputSchema,
+    name: 'simulateTrafficFlowFlow',
+    inputSchema: SimulateTrafficFlowInputSchema,
+    outputSchema: SimulateTrafficFlowOutputSchema,
   },
   async input => {
     const {output} = await prompt(input);

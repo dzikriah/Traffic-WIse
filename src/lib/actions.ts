@@ -1,21 +1,25 @@
 'use server';
 
-import { adjustTollGateDynamically } from '@/ai/flows/adjust-toll-gate-dynamically';
+import { determineCongestionFactor } from '@/ai/flows/adjust-toll-gate-dynamically';
 import { explainTrafficChange } from '@/ai/flows/explain-traffic-changes';
-import { simulateTrafficVolumeVariation } from '@/ai/flows/simulate-traffic-volume-variation';
+import { simulateTrafficFlow } from '@/ai/flows/simulate-traffic-volume-variation';
 import type { TrafficData, TrafficStatus } from '@/lib/types';
 
-const getTrafficStatus = (volume: number): TrafficStatus => {
-  if (volume <= 80) return 'Smooth';
-  if (volume <= 150) return 'Moderate';
+const getTrafficStatus = (totalVolume: number): TrafficStatus => {
+  if (totalVolume <= 150) return 'Smooth';
+  if (totalVolume <= 300) return 'Moderate';
   return 'Heavy';
 };
 
 const initialTrafficData: TrafficData = {
   timestamp: new Date().toISOString(),
-  toll_gate: '2 lanes open',
-  vehicle_volume: 75,
+  location: 'Jl. Jenderal Sudirman, Jakarta',
+  total_volume: 120,
+  car_volume: 70,
+  motorcycle_volume: 50,
+  average_speed: 45, // km/h
   traffic_status: 'Smooth',
+  congestion_factor: 'Normal flow',
   explanation: 'System initialized. Traffic is flowing smoothly.',
 };
 
@@ -25,34 +29,53 @@ export async function runSimulationStep(
   const currentData = previousData || initialTrafficData;
 
   try {
-    const { newVehicleVolume } = await simulateTrafficVolumeVariation({
-      currentVehicleVolume: currentData.vehicle_volume,
+    // 1. Simulate new traffic volumes and speed
+    const simOutput = await simulateTrafficFlow({
+      location: currentData.location,
+      currentCarVolume: currentData.car_volume,
+      currentMotorcycleVolume: currentData.motorcycle_volume,
+      currentAverageSpeed: currentData.average_speed,
     });
 
-    const newTrafficStatus = getTrafficStatus(newVehicleVolume);
+    const newCarVolume = Math.max(0, simOutput.newCarVolume);
+    const newMotorcycleVolume = Math.max(0, simOutput.newMotorcycleVolume);
+    const newAverageSpeed = Math.max(0, simOutput.newAverageSpeed);
+    const newTotalVolume = newCarVolume + newMotorcycleVolume;
 
-    const { newTollGate } = await adjustTollGateDynamically({
-      currentTrafficStatus: newTrafficStatus,
-      currentTollGate: currentData.toll_gate,
-      vehicleVolume: newVehicleVolume,
+    // 2. Determine new traffic status
+    const newTrafficStatus = getTrafficStatus(newTotalVolume);
+
+    // 3. Determine primary congestion factor
+    const { congestionFactor } = await determineCongestionFactor({
+      trafficStatus: newTrafficStatus,
+      carVolume: newCarVolume,
+      motorcycleVolume: newMotorcycleVolume,
+      averageSpeed: newAverageSpeed,
     });
 
+    // 4. Get a human-readable explanation of the changes
     const timestamp = new Date().toISOString();
-
     const { explanation } = await explainTrafficChange({
-      previousVehicleVolume: currentData.vehicle_volume,
-      currentVehicleVolume: newVehicleVolume,
+      location: currentData.location,
+      previousTotalVolume: currentData.total_volume,
+      currentTotalVolume: newTotalVolume,
+      previousAverageSpeed: currentData.average_speed,
+      currentAverageSpeed: newAverageSpeed,
       previousTrafficStatus: currentData.traffic_status,
       currentTrafficStatus: newTrafficStatus,
-      tollGate: newTollGate,
       timestamp: timestamp,
     });
 
+    // 5. Return the new comprehensive traffic data
     return {
       timestamp,
-      toll_gate: newTollGate,
-      vehicle_volume: newVehicleVolume,
+      location: currentData.location,
+      total_volume: newTotalVolume,
+      car_volume: newCarVolume,
+      motorcycle_volume: newMotorcycleVolume,
+      average_speed: Math.round(newAverageSpeed),
       traffic_status: newTrafficStatus,
+      congestion_factor: congestionFactor,
       explanation,
     };
   } catch (error) {

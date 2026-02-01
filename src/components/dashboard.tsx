@@ -3,11 +3,13 @@
 import { runSimulationStep } from '@/lib/actions';
 import type { TrafficData } from '@/lib/types';
 import {
-  CarFront,
+  Bike,
+  Car,
   Clock,
   Gauge,
-  Info,
   LineChart as LineChartIcon,
+  MapPin,
+  TrafficCone,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import TrafficCard from '@/components/traffic-card';
@@ -15,14 +17,17 @@ import TrafficChart from '@/components/traffic-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 
 const initialTrafficData: TrafficData = {
   timestamp: new Date().toISOString(),
-  toll_gate: '2 lanes open',
-  vehicle_volume: 75,
+  location: 'Jl. Jenderal Sudirman, Jakarta',
+  total_volume: 120,
+  car_volume: 70,
+  motorcycle_volume: 50,
+  average_speed: 45,
   traffic_status: 'Smooth',
+  congestion_factor: 'Normal Flow',
   explanation: 'System is initializing. Awaiting first simulation...',
 };
 
@@ -32,32 +37,6 @@ export default function Dashboard() {
   const [history, setHistory] = useState<{ time: string; volume: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
-  const getStatusBadgeVariant = (status: TrafficData['traffic_status']) => {
-    switch (status) {
-      case 'Smooth':
-        return 'outline';
-      case 'Moderate':
-        return 'secondary';
-      case 'Heavy':
-        return 'destructive';
-      default:
-        return 'default';
-    }
-  };
-  
-  const getStatusColorClass = (status: TrafficData['traffic_status']) => {
-     switch (status) {
-      case 'Smooth':
-        return 'text-green-500';
-      case 'Moderate':
-        return 'text-amber-500';
-      case 'Heavy':
-        return 'text-red-500';
-      default:
-        return 'text-foreground';
-    }
-  }
 
   const runStep = useCallback(
     async (currentData: TrafficData) => {
@@ -71,7 +50,7 @@ export default function Dashboard() {
           second: '2-digit',
         });
         setHistory((prev) =>
-          [...prev, { time, volume: newData.vehicle_volume }].slice(-20)
+          [...prev, { time, volume: newData.total_volume }].slice(-20)
         );
       } catch (error) {
         console.error('Simulation step failed:', error);
@@ -103,14 +82,33 @@ export default function Dashboard() {
 
   return (
     <>
+      <div className="flex items-center gap-2 mb-4">
+        <MapPin className="h-6 w-6 text-muted-foreground" />
+        <h2 className="text-xl font-semibold text-foreground">
+          {trafficData.location}
+        </h2>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <TrafficCard
-          title="Vehicle Volume"
-          value={trafficData.vehicle_volume}
-          unit="vehicles"
-          icon={<CarFront className="h-6 w-6 text-muted-foreground" />}
+          title="Total Vehicles"
+          value={trafficData.total_volume}
+          icon={<Car className="h-6 w-6 text-muted-foreground" />}
           isLoading={isLoading}
-        />
+        >
+          {isLoading ? (
+             <Skeleton className="h-8 w-1/2" />
+          ) : (
+            <div>
+              <div className="text-2xl font-bold">
+                {trafficData.total_volume}
+              </div>
+              <div className="text-xs text-muted-foreground flex items-center gap-4 mt-1">
+                  <span className="flex items-center gap-1"><Car className="h-4 w-4" /> {trafficData.car_volume}</span>
+                  <span className="flex items-center gap-1"><Bike className="h-4 w-4" /> {trafficData.motorcycle_volume}</span>
+              </div>
+            </div>
+          )}
+        </TrafficCard>
         <TrafficCard
           title="Traffic Status"
           icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
@@ -135,8 +133,9 @@ export default function Dashboard() {
           )}
         </TrafficCard>
         <TrafficCard
-          title="Toll Gate Status"
-          value={trafficData.toll_gate}
+          title="Average Speed"
+          value={trafficData.average_speed}
+          unit="km/h"
           icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
           isLoading={isLoading}
         />
@@ -162,21 +161,24 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Info className="h-5 w-5" />
-              AI Explanation
+              <TrafficCone className="h-5 w-5" />
+              Congestion Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading && !trafficData.explanation ? (
               <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                {trafficData.explanation}
-              </p>
+             <div>
+                <p className="text-sm font-medium text-foreground">{trafficData.congestion_factor}</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {trafficData.explanation}
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>

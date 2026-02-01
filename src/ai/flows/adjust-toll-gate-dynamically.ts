@@ -1,72 +1,71 @@
 'use server';
 /**
- * @fileOverview Dynamically adjusts toll gate settings based on traffic conditions.
+ * @fileOverview Determines the primary factor contributing to traffic congestion.
  *
- * - adjustTollGateDynamically - A function that adjusts toll gate settings.
- * - AdjustTollGateDynamicallyInput - The input type for the adjustTollGateDynamically function.
- * - AdjustTollGateDynamicallyOutput - The return type for the adjustTollGateDynamically function.
+ * - determineCongestionFactor - A function that analyzes traffic data to find the main cause of congestion.
+ * - DetermineCongestionFactorInput - The input type for the determineCongestionFactor function.
+ * - DetermineCongestionFactorOutput - The return type for the determineCongestionFactor function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const AdjustTollGateDynamicallyInputSchema = z.object({
-  currentTrafficStatus: z
+const DetermineCongestionFactorInputSchema = z.object({
+  trafficStatus: z
     .string()
     .describe("The current traffic status ('Smooth', 'Moderate', or 'Heavy')."),
-  currentTollGate: z.string().describe('The current toll gate setting.'),
-  vehicleVolume: z.number().describe('The current vehicle volume.'),
+  carVolume: z.number().describe('The current volume of cars.'),
+  motorcycleVolume: z.number().describe('The current volume of motorcycles.'),
+  averageSpeed: z.number().describe('The current average speed in km/h.'),
 });
-export type AdjustTollGateDynamicallyInput = z.infer<
-  typeof AdjustTollGateDynamicallyInputSchema
+export type DetermineCongestionFactorInput = z.infer<
+  typeof DetermineCongestionFactorInputSchema
 >;
 
-const AdjustTollGateDynamicallyOutputSchema = z.object({
-  newTollGate: z
+const DetermineCongestionFactorOutputSchema = z.object({
+  congestionFactor: z
     .string()
-    .describe('The new toll gate setting, adjusted for traffic conditions.'),
-  explanation: z.string().describe('Explanation for why the toll gate was adjusted.'),
+    .describe('The primary factor causing the current traffic condition.'),
 });
-export type AdjustTollGateDynamicallyOutput = z.infer<
-  typeof AdjustTollGateDynamicallyOutputSchema
+export type DetermineCongestionFactorOutput = z.infer<
+  typeof DetermineCongestionFactorOutputSchema
 >;
 
-export async function adjustTollGateDynamically(
-  input: AdjustTollGateDynamicallyInput
-): Promise<AdjustTollGateDynamicallyOutput> {
-  return adjustTollGateDynamicallyFlow(input);
+export async function determineCongestionFactor(
+  input: DetermineCongestionFactorInput
+): Promise<DetermineCongestionFactorOutput> {
+  return determineCongestionFactorFlow(input);
 }
 
-const adjustTollGateDynamicallyPrompt = ai.definePrompt({
-  name: 'adjustTollGateDynamicallyPrompt',
-  input: {schema: AdjustTollGateDynamicallyInputSchema},
-  output: {schema: AdjustTollGateDynamicallyOutputSchema},
-  prompt: `You are responsible for dynamically adjusting toll gate settings based on real-time traffic conditions.
+const determineCongestionFactorPrompt = ai.definePrompt({
+  name: 'determineCongestionFactorPrompt',
+  input: {schema: DetermineCongestionFactorInputSchema},
+  output: {schema: DetermineCongestionFactorOutputSchema},
+  prompt: `You are a traffic analysis AI. Based on the provided data, identify the single, most significant factor contributing to the current traffic status.
 
-  Current Traffic Status: {{{currentTrafficStatus}}}
-  Current Toll Gate: {{{currentTollGate}}}
-  Vehicle Volume: {{{vehicleVolume}}}
+  Current Traffic Status: {{{trafficStatus}}}
+  Car Volume: {{{carVolume}}}
+  Motorcycle Volume: {{{motorcycleVolume}}}
+  Average Speed: {{{averageSpeed}}} km/h
 
-  Based on the current traffic status and vehicle volume, determine if the toll gate needs to be adjusted. Only adjust the toll gate if there is a significant shift in traffic (e.g., from Smooth to Heavy or vice versa).
+  Analyze the data and determine the primary congestion factor. This could be 'High car volume', 'High motorcycle volume', 'Overall high volume', 'Low average speed', or 'Normal flow' if traffic is smooth. Be concise.
 
-  Return a JSON object with the new toll gate setting and a brief explanation of why the adjustment was made.
-  If no adjustment is needed, keep the current toll gate setting.
+  Return a JSON object with the identified factor.
 
   Example:
   {
-    "newTollGate": "Open all lanes",
-    "explanation": "Traffic has increased to Heavy, requiring all lanes to be open."
+    "congestionFactor": "High motorcycle volume"
   }`,
 });
 
-const adjustTollGateDynamicallyFlow = ai.defineFlow(
+const determineCongestionFactorFlow = ai.defineFlow(
   {
-    name: 'adjustTollGateDynamicallyFlow',
-    inputSchema: AdjustTollGateDynamicallyInputSchema,
-    outputSchema: AdjustTollGateDynamicallyOutputSchema,
+    name: 'determineCongestionFactorFlow',
+    inputSchema: DetermineCongestionFactorInputSchema,
+    outputSchema: DetermineCongestionFactorOutputSchema,
   },
   async input => {
-    const {output} = await adjustTollGateDynamicallyPrompt(input);
+    const {output} = await determineCongestionFactorPrompt(input);
     return output!;
   }
 );
