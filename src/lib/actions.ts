@@ -3,8 +3,11 @@
 import { determineCongestionFactor } from '@/ai/flows/adjust-toll-gate-dynamically';
 import { explainTrafficChange } from '@/ai/flows/explain-traffic-changes';
 import { simulateTrafficFlow } from '@/ai/flows/simulate-traffic-volume-variation';
-import { simulateVehicleCrossing } from '@/ai/flows/simulate-vehicle-crossing';
-import type { TrafficData, TrafficStatus, SimulateVehicleCrossingOutput } from '@/lib/types';
+import type {
+  TrafficData,
+  TrafficStatus,
+  SimulateVehicleCrossingOutput,
+} from '@/lib/types';
 
 const getTrafficStatus = (totalVolume: number): TrafficStatus => {
   if (totalVolume <= 150) return 'Smooth';
@@ -93,17 +96,51 @@ export async function runSimulationStep(
 export async function getRealtimeVehicleEvent(
   trafficStatus: TrafficStatus
 ): Promise<SimulateVehicleCrossingOutput> {
-  try {
-    const vehicleEvent = await simulateVehicleCrossing({ trafficStatus });
-    return vehicleEvent;
-  } catch (error) {
-    console.error('Error getting real-time vehicle event:', error);
-    // Return a fallback event
-    return {
-      timestamp: new Date().toISOString(),
-      vehicleType: 'Car',
-      speed: 0,
-      eventDescription: 'Error fetching simulation data.',
-    };
+  const vehicleTypes = ['Car', 'Motorcycle', 'Bus', 'Truck'] as const;
+  type VehicleType = (typeof vehicleTypes)[number];
+  const vehicleType: VehicleType =
+    vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
+
+  let minSpeed = 0;
+  let maxSpeed = 0;
+
+  switch (trafficStatus) {
+    case 'Smooth':
+      if (vehicleType === 'Car') {
+        minSpeed = 30;
+        maxSpeed = 50;
+      } else if (vehicleType === 'Motorcycle') {
+        minSpeed = 35;
+        maxSpeed = 55;
+      } else {
+        minSpeed = 20;
+        maxSpeed = 40;
+      } // Bus or Truck
+      break;
+    case 'Moderate':
+      if (vehicleType === 'Car') {
+        minSpeed = 15;
+        maxSpeed = 30;
+      } else if (vehicleType === 'Motorcycle') {
+        minSpeed = 20;
+        maxSpeed = 35;
+      } else {
+        minSpeed = 10;
+        maxSpeed = 25;
+      } // Bus or Truck
+      break;
+    case 'Heavy':
+      minSpeed = 0;
+      maxSpeed = 15;
+      break;
   }
+
+  const speed =
+    Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+
+  return Promise.resolve({
+    timestamp: new Date().toISOString(),
+    vehicleType,
+    speed,
+  });
 }
