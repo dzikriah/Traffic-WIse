@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export type TrafficStatus = 'Smooth' | 'Moderate' | 'Heavy';
 
 export interface TrafficData {
@@ -11,3 +13,16 @@ export interface TrafficData {
   congestion_factor: string;
   explanation: string;
 }
+
+export const SimulateVehicleCrossingInputSchema = z.object({
+  trafficStatus: z.string().describe("The current traffic status ('Smooth', 'Moderate', or 'Heavy')."),
+});
+export type SimulateVehicleCrossingInput = z.infer<typeof SimulateVehicleCrossingInputSchema>;
+
+export const SimulateVehicleCrossingOutputSchema = z.object({
+  timestamp: z.string().describe('The ISO timestamp of the event.'),
+  vehicleType: z.enum(['Car', 'Motorcycle']).describe('The type of vehicle.'),
+  speed: z.number().describe('The speed of the vehicle in km/h.'),
+  eventDescription: z.string().describe('A brief description of the event at the traffic light.'),
+});
+export type SimulateVehicleCrossingOutput = z.infer<typeof SimulateVehicleCrossingOutputSchema>;

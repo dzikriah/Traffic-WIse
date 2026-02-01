@@ -3,7 +3,8 @@
 import { determineCongestionFactor } from '@/ai/flows/adjust-toll-gate-dynamically';
 import { explainTrafficChange } from '@/ai/flows/explain-traffic-changes';
 import { simulateTrafficFlow } from '@/ai/flows/simulate-traffic-volume-variation';
-import type { TrafficData, TrafficStatus } from '@/lib/types';
+import { simulateVehicleCrossing } from '@/ai/flows/simulate-vehicle-crossing';
+import type { TrafficData, TrafficStatus, SimulateVehicleCrossingOutput } from '@/lib/types';
 
 const getTrafficStatus = (totalVolume: number): TrafficStatus => {
   if (totalVolume <= 150) return 'Smooth';
@@ -12,15 +13,15 @@ const getTrafficStatus = (totalVolume: number): TrafficStatus => {
 };
 
 const initialTrafficData: TrafficData = {
-  timestamp: new Date().toISOString(),
+  timestamp: '',
   location: 'Jl. Jenderal Sudirman, Jakarta',
-  total_volume: 120,
-  car_volume: 70,
-  motorcycle_volume: 50,
-  average_speed: 45, // km/h
+  total_volume: 0,
+  car_volume: 0,
+  motorcycle_volume: 0,
+  average_speed: 0,
   traffic_status: 'Smooth',
-  congestion_factor: 'Normal flow',
-  explanation: 'System initialized. Traffic is flowing smoothly.',
+  congestion_factor: 'Initializing...',
+  explanation: 'System is initializing. Awaiting first simulation...',
 };
 
 export async function runSimulationStep(
@@ -85,6 +86,24 @@ export async function runSimulationStep(
       timestamp: new Date().toISOString(),
       explanation:
         'An error occurred while simulating traffic changes. Using last known state.',
+    };
+  }
+}
+
+export async function getRealtimeVehicleEvent(
+  trafficStatus: TrafficStatus
+): Promise<SimulateVehicleCrossingOutput> {
+  try {
+    const vehicleEvent = await simulateVehicleCrossing({ trafficStatus });
+    return vehicleEvent;
+  } catch (error) {
+    console.error('Error getting real-time vehicle event:', error);
+    // Return a fallback event
+    return {
+      timestamp: new Date().toISOString(),
+      vehicleType: 'Car',
+      speed: 0,
+      eventDescription: 'Error fetching simulation data.',
     };
   }
 }

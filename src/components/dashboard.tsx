@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DataLog from './data-log';
 
 const initialTrafficData: TrafficData = {
   timestamp: '',
@@ -36,11 +38,18 @@ export default function Dashboard() {
     useState<TrafficData>(initialTrafficData);
   const [history, setHistory] = useState<{ time: string; volume: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const { toast } = useToast();
 
   const runStep = useCallback(
     async (currentData: TrafficData) => {
-      if (!isLoading) setIsLoading(true);
+      const shouldSetLoading = activeTab === 'dashboard';
+      if (shouldSetLoading && !isLoading) {
+        setIsLoading(true);
+      } else if (activeTab !== 'dashboard') {
+        setIsLoading(false);
+      }
+
       try {
         const newData = await runSimulationStep(currentData);
         setTrafficData(newData);
@@ -60,10 +69,10 @@ export default function Dashboard() {
           description: 'Could not fetch new traffic data.',
         });
       } finally {
-        setIsLoading(false);
+        if (shouldSetLoading) setIsLoading(false);
       }
     },
-    [toast, isLoading]
+    [toast, isLoading, activeTab]
   );
 
   useEffect(() => {
@@ -81,43 +90,50 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <>
-      <div className="flex items-center gap-2 mb-4">
-        <MapPin className="h-6 w-6 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
-          {trafficData.location}
-        </h2>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-6 w-6 text-muted-foreground" />
+          <h2 className="text-xl font-semibold text-foreground">
+            {trafficData.location}
+          </h2>
+        </div>
+        <TabsList>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="data-log">Data</TabsTrigger>
+        </TabsList>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <TrafficCard
-          title="Total Vehicles"
-          value={trafficData.total_volume}
-          icon={<Car className="h-6 w-6 text-muted-foreground" />}
-          isLoading={isLoading}
-        >
-          {isLoading ? (
-             <Skeleton className="h-8 w-1/2" />
-          ) : (
-            <div>
-              <div className="text-2xl font-bold">
-                {trafficData.total_volume}
-              </div>
-              <div className="text-xs text-muted-foreground flex items-center gap-4 mt-1">
+
+      <TabsContent value="dashboard" className="mt-0 space-y-4 md:space-y-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <TrafficCard
+            title="Total Vehicles"
+            icon={<Car className="h-6 w-6 text-muted-foreground" />}
+            isLoading={isLoading}
+          >
+            {isLoading ? (
+              <Skeleton className="h-8 w-1/2" />
+            ) : (
+              <div>
+                <div className="text-2xl font-bold">
+                  {trafficData.total_volume}
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-4 mt-1">
                   <span className="flex items-center gap-1"><Car className="h-4 w-4" /> {trafficData.car_volume}</span>
                   <span className="flex items-center gap-1"><Bike className="h-4 w-4" /> {trafficData.motorcycle_volume}</span>
+                </div>
               </div>
-            </div>
-          )}
-        </TrafficCard>
-        <TrafficCard
-          title="Traffic Status"
-          icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
-          isLoading={isLoading}
-        >
-          {isLoading ? (
-            <Skeleton className="h-6 w-24" />
-          ) : (
-            <div className="flex items-center gap-2">
+            )}
+          </TrafficCard>
+          <TrafficCard
+            title="Traffic Status"
+            icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
+            isLoading={isLoading}
+          >
+            {isLoading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              <div className="flex items-center gap-2">
                 <span
                   className={cn(
                     'h-2 w-2 rounded-full',
@@ -130,63 +146,67 @@ export default function Dashboard() {
                   {trafficData.traffic_status}
                 </span>
               </div>
-          )}
-        </TrafficCard>
-        <TrafficCard
-          title="Average Speed"
-          value={trafficData.average_speed}
-          unit="km/h"
-          icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
-          isLoading={isLoading}
-        />
-        <TrafficCard
-          title="Last Updated"
-          value={
-            isLoading || !trafficData.timestamp
-              ? '...'
-              : new Date(trafficData.timestamp).toLocaleTimeString()
-          }
-          icon={<Clock className="h-6 w-6 text-muted-foreground" />}
-          isLoading={isLoading}
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LineChartIcon className="h-5 w-5" />
-              Vehicle Volume History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TrafficChart data={history} isLoading={isLoading} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrafficCone className="h-5 w-5" />
-              Congestion Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading && !trafficData.explanation ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            ) : (
-             <div>
-                <p className="text-sm font-medium text-foreground">{trafficData.congestion_factor}</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {trafficData.explanation}
-                </p>
-              </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          </TrafficCard>
+          <TrafficCard
+            title="Average Speed"
+            value={trafficData.average_speed}
+            unit="km/h"
+            icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
+            isLoading={isLoading}
+          />
+          <TrafficCard
+            title="Last Updated"
+            value={
+              isLoading || !trafficData.timestamp
+                ? '...'
+                : new Date(trafficData.timestamp).toLocaleTimeString()
+            }
+            icon={<Clock className="h-6 w-6 text-muted-foreground" />}
+            isLoading={isLoading}
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LineChartIcon className="h-5 w-5" />
+                Vehicle Volume History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TrafficChart data={history} isLoading={isLoading} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrafficCone className="h-5 w-5" />
+                Congestion Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading && !trafficData.explanation ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-medium text-foreground">{trafficData.congestion_factor}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {trafficData.explanation}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </TabsContent>
+      <TabsContent value="data-log" className="mt-0">
+        <DataLog currentTrafficStatus={trafficData.traffic_status} isVisible={activeTab === 'data-log'} />
+      </TabsContent>
+    </Tabs>
   );
 }
