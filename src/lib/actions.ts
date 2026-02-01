@@ -93,54 +93,67 @@ export async function runSimulationStep(
   }
 }
 
-export async function getRealtimeVehicleEvent(
+export async function getRealtimeVehicleEvents(
   trafficStatus: TrafficStatus
-): Promise<SimulateVehicleCrossingOutput> {
+): Promise<SimulateVehicleCrossingOutput[]> {
   const vehicleTypes = ['Car', 'Motorcycle', 'Bus', 'Truck'] as const;
   type VehicleType = (typeof vehicleTypes)[number];
-  const vehicleType: VehicleType =
-    vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
+  
+  const numberOfEvents = Math.floor(Math.random() * 4) + 2; // Generate 2 to 5 events
+  const events: SimulateVehicleCrossingOutput[] = [];
+  const now = Date.now();
 
-  let minSpeed = 0;
-  let maxSpeed = 0;
+  for (let i = 0; i < numberOfEvents; i++) {
+      const vehicleType: VehicleType =
+        vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
 
-  switch (trafficStatus) {
-    case 'Smooth':
-      if (vehicleType === 'Car') {
-        minSpeed = 30;
-        maxSpeed = 50;
-      } else if (vehicleType === 'Motorcycle') {
-        minSpeed = 35;
-        maxSpeed = 55;
-      } else {
-        minSpeed = 20;
-        maxSpeed = 40;
-      } // Bus or Truck
-      break;
-    case 'Moderate':
-      if (vehicleType === 'Car') {
-        minSpeed = 15;
-        maxSpeed = 30;
-      } else if (vehicleType === 'Motorcycle') {
-        minSpeed = 20;
-        maxSpeed = 35;
-      } else {
-        minSpeed = 10;
-        maxSpeed = 25;
-      } // Bus or Truck
-      break;
-    case 'Heavy':
-      minSpeed = 0;
-      maxSpeed = 15;
-      break;
+      let minSpeed = 0;
+      let maxSpeed = 0;
+
+      switch (trafficStatus) {
+        case 'Smooth':
+          if (vehicleType === 'Car') {
+            minSpeed = 30;
+            maxSpeed = 50;
+          } else if (vehicleType === 'Motorcycle') {
+            minSpeed = 35;
+            maxSpeed = 55;
+          } else {
+            minSpeed = 20;
+            maxSpeed = 40;
+          } // Bus or Truck
+          break;
+        case 'Moderate':
+          if (vehicleType === 'Car') {
+            minSpeed = 15;
+            maxSpeed = 30;
+          } else if (vehicleType === 'Motorcycle') {
+            minSpeed = 20;
+            maxSpeed = 35;
+          } else {
+            minSpeed = 10;
+            maxSpeed = 25;
+          } // Bus or Truck
+          break;
+        case 'Heavy':
+          minSpeed = 0;
+          maxSpeed = 15;
+          break;
+      }
+
+      const speed =
+        Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+      
+      // Stagger timestamps slightly to make it look more real
+      const timestamp = new Date(now - i * (Math.random() * 500 + 100)).toISOString();
+
+      events.push({
+        timestamp,
+        vehicleType,
+        speed,
+      });
   }
 
-  const speed =
-    Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
 
-  return Promise.resolve({
-    timestamp: new Date().toISOString(),
-    vehicleType,
-    speed,
-  });
+  return Promise.resolve(events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
 }
