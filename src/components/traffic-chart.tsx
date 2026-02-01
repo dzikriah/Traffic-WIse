@@ -59,7 +59,7 @@ export default function TrafficChart({ data, isLoading }: TrafficChartProps) {
           axisLine={false}
           tickMargin={8}
           fontSize={12}
-          domain={[0, (dataMax: number) => Math.max(dataMax + 50, 400)]}
+          domain={[0, (dataMax: number) => dataMax + 50]}
         />
         <Tooltip
           cursor={false}
