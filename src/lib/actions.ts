@@ -55,18 +55,18 @@ export async function runSimulationStep(
   // 4. Generate a varied congestion analysis based on status
   const analysisByStatus = {
     Smooth: [
-      { factor: 'Normal Flow', explanation: 'Traffic is moving smoothly with no significant delays.' },
-      { factor: 'Light Traffic', explanation: 'Vehicle volume is low, resulting in free-flowing traffic.' },
+      { factor: 'Off-Peak Flow', explanation: 'Traffic is flowing very smoothly, typical for off-peak hours or late at night.' },
+      { factor: 'Excellent Flow', explanation: 'Ideal road conditions. Traffic is moving without any significant obstructions.' },
     ],
     Moderate: [
-      { factor: 'Increasing Volume', explanation: 'A growing number of vehicles is causing slight delays as the road gets busier.' },
-      { factor: 'Minor Congestion', explanation: 'Some congestion is present around intersections, but traffic is still moving steadily.' },
-      { factor: 'Steady Flow', explanation: 'Traffic is consistent, with vehicles moving at a reduced but steady pace.' },
+      { factor: 'Building Congestion', explanation: 'Vehicle volume is increasing, often seen leading into the morning or evening rush hour.' },
+      { factor: 'Intersection Delays', explanation: 'Density is causing minor delays and queuing at major intersections.' },
+      { factor: 'Weekend Traffic', explanation: 'Typical weekend traffic patterns. Busy, but vehicles are still moving at a steady pace.' },
     ],
     Heavy: [
-      { factor: 'Heavy Congestion', explanation: 'High vehicle volume is causing significant delays and slow-moving traffic.' },
-      { factor: 'Peak Hour Traffic', explanation: 'The road is experiencing typical peak hour conditions, leading to severe congestion.' },
-      { factor: 'Near Standstill', explanation: 'Traffic is nearly at a standstill, with very slow movement and long waits.' },
+      { factor: 'Morning Rush Hour', explanation: 'Peak morning congestion. Extremely high vehicle volume is causing severe delays.' },
+      { factor: 'Evening Commute', explanation: 'Severe jams are occurring during the evening commute. Average speed is critically low.' },
+      { factor: 'Gridlock', explanation: 'Traffic is nearly at a standstill. This may be due to extreme volume or a road incident.' },
     ]
   };
   
