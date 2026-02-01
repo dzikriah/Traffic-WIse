@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Car, Bike } from 'lucide-react';
+import { Car, Bike, Bus, Truck } from 'lucide-react';
 import { type TrafficStatus } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
 
@@ -81,7 +81,10 @@ export default function DataLog({ currentTrafficStatus, isVisible }: DataLogProp
                     {new Date(event.timestamp).toLocaleTimeString()}
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
-                    {event.vehicleType === 'Car' ? <Car className="h-4 w-4" /> : <Bike className="h-4 w-4" />}
+                    {event.vehicleType === 'Car' && <Car className="h-4 w-4" />}
+                    {event.vehicleType === 'Motorcycle' && <Bike className="h-4 w-4" />}
+                    {event.vehicleType === 'Bus' && <Bus className="h-4 w-4" />}
+                    {event.vehicleType === 'Truck' && <Truck className="h-4 w-4" />}
                     {event.vehicleType}
                   </TableCell>
                   <TableCell>{event.speed} km/h</TableCell>

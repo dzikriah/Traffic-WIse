@@ -21,7 +21,7 @@ export type SimulateVehicleCrossingInput = z.infer<typeof SimulateVehicleCrossin
 
 export const SimulateVehicleCrossingOutputSchema = z.object({
   timestamp: z.string().describe('The ISO timestamp of the event.'),
-  vehicleType: z.enum(['Car', 'Motorcycle']).describe('The type of vehicle.'),
+  vehicleType: z.enum(['Car', 'Motorcycle', 'Bus', 'Truck']).describe('The type of vehicle.'),
   speed: z.number().describe('The speed of the vehicle in km/h.'),
   eventDescription: z.string().describe('A brief description of the event at the traffic light.'),
 });
