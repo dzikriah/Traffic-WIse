@@ -260,18 +260,29 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
     } catch (error) {
         console.error('AI route prediction failed:', error);
         // Fallback to a simple estimation if AI fails
-        let time;
+        let time, explanation;
         switch (input.trafficStatus) {
-            case 'Smooth': time = '15-25'; break;
-            case 'Moderate': time = '30-45'; break;
-            case 'Heavy': time = '50-70'; break;
-            default: time = '20-40';
+            case 'Smooth': 
+                time = '15-25'; 
+                explanation = "AI prediction is currently unavailable. With smooth traffic, your trip should be relatively quick using main roads.";
+                break;
+            case 'Moderate': 
+                time = '30-45'; 
+                explanation = "AI prediction is currently unavailable. Based on moderate traffic, expect some slowdowns, particularly on major arteries.";
+                break;
+            case 'Heavy': 
+                time = '50-70';
+                explanation = "AI prediction is currently unavailable. Given the heavy congestion, significant delays are likely. It's advisable to postpone or seek alternative routes if possible.";
+                break;
+            default: 
+                time = '20-40';
+                explanation = "AI prediction is currently unavailable. Traffic impact is uncertain, but a general travel estimate is provided.";
         }
         return {
             predictedTravelTime: `${time} minutes`,
-            suggestedRoute: `Main roads like Jl. Sudirman or Jl. Gatot Subroto.`,
-            distance: 'approx. 10-20 km',
-            explanation: `AI prediction failed. Based on ${input.trafficStatus} traffic, the trip could take ${time} minutes.`
+            suggestedRoute: `Main roads (e.g., Jl. Sudirman)`,
+            distance: 'Not available',
+            explanation: explanation
         }
     }
 }
