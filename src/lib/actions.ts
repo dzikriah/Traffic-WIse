@@ -4,10 +4,12 @@ import {
   explainTrafficChange,
   type ExplainTrafficChangeInput,
 } from '@/ai/flows/explain-traffic-changes';
+import { getWeather } from '@/ai/flows/get-weather';
 import type {
   TrafficData,
   TrafficStatus,
   SimulateVehicleCrossingOutput,
+  WeatherCondition,
 } from '@/lib/types';
 
 const getTrafficStatus = (totalVolume: number): TrafficStatus => {
@@ -26,6 +28,8 @@ const initialTrafficData: TrafficData = {
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
+  weather: 'Sunny',
+  temperature: 30,
 };
 
 export async function runSimulationStep(
@@ -58,7 +62,19 @@ export async function runSimulationStep(
   // 3. Determine new traffic status
   const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-  // 4. Generate AI-powered congestion analysis
+  // 4. Get weather data
+  let weatherData = {
+    weather: currentData.weather,
+    temperature: currentData.temperature,
+  };
+  try {
+      weatherData = await getWeather({ location: currentData.location });
+  } catch (error) {
+      console.error('AI weather fetch failed:', error);
+      // On failure, use previous data or a default as fallback
+  }
+
+  // 5. Generate AI-powered congestion analysis
   let analysis = {
     congestion_factor: 'Analysis pending...',
     explanation: 'Awaiting AI analysis of the current traffic data...',
@@ -76,6 +92,8 @@ export async function runSimulationStep(
       timestamp: new Date().toISOString(),
       carVolume: newCarVolume,
       motorcycleVolume: newMotorcycleVolume,
+      weather: weatherData.weather,
+      temperature: weatherData.temperature,
     };
 
     const { explanation } = await explainTrafficChange(aiInput);
@@ -88,7 +106,7 @@ export async function runSimulationStep(
     };
   } catch (error) {
     console.error('AI analysis failed:', error);
-    // Fallback to the previous non-AI analysis if the AI call fails
+    // Fallback to non-AI analysis if the AI call fails
     const analysisByStatus = {
       Smooth: [
         {
@@ -146,7 +164,7 @@ export async function runSimulationStep(
     };
   }
 
-  // 5. Return the new comprehensive traffic data
+  // 6. Return the new comprehensive traffic data
   return {
     timestamp: new Date().toISOString(),
     location: currentData.location,
@@ -157,6 +175,8 @@ export async function runSimulationStep(
     traffic_status: newTrafficStatus,
     congestion_factor: analysis.congestion_factor,
     explanation: analysis.explanation,
+    weather: weatherData.weather,
+    temperature: weatherData.temperature,
   };
 }
 

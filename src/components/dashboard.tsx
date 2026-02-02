@@ -1,7 +1,7 @@
 'use client';
 
 import { runSimulationStep } from '@/lib/actions';
-import type { TrafficData } from '@/lib/types';
+import type { TrafficData, WeatherCondition } from '@/lib/types';
 import {
   Bike,
   Car,
@@ -10,6 +10,10 @@ import {
   LineChart as LineChartIcon,
   MapPin,
   TrafficCone,
+  Sun,
+  Cloudy,
+  CloudRain,
+  Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import TrafficCard from '@/components/traffic-card';
@@ -32,7 +36,17 @@ const initialTrafficData: TrafficData = {
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
+  weather: 'Sunny',
+  temperature: 30,
 };
+
+const weatherIcons: Record<WeatherCondition, React.ReactNode> = {
+  Sunny: <Sun className="h-6 w-6 text-muted-foreground" />,
+  Cloudy: <Cloudy className="h-6 w-6 text-muted-foreground" />,
+  Rainy: <CloudRain className="h-6 w-6 text-muted-foreground" />,
+  Thunderstorm: <Zap className="h-6 w-6 text-muted-foreground" />,
+};
+
 
 export default function Dashboard() {
   const [trafficData, setTrafficData] =
@@ -113,7 +127,7 @@ export default function Dashboard() {
       </div>
 
       <TabsContent value="dashboard" className="mt-0 space-y-4 md:space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
           <TrafficCard
             title="Total Vehicles"
             icon={<Car className="h-6 w-6 text-muted-foreground" />}
@@ -163,6 +177,22 @@ export default function Dashboard() {
             icon={<Gauge className="h-6 w-6 text-muted-foreground" />}
             isLoading={isLoading}
           />
+          <TrafficCard
+            title="Weather"
+            icon={weatherIcons[trafficData.weather] || <Cloudy className="h-6 w-6 text-muted-foreground" />}
+            isLoading={isLoading}
+          >
+            {isLoading ? (
+              <Skeleton className="h-8 w-1/2" />
+            ) : (
+              <div>
+                <div className="text-2xl font-bold">
+                  {trafficData.temperature}°C
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{trafficData.weather}</p>
+              </div>
+            )}
+          </TrafficCard>
           <TrafficCard
             title="Last Updated"
             value={

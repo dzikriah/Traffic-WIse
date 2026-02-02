@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const ExplainTrafficChangeInputSchema = z.object({
   location: z.string().describe('The location of the traffic observation.'),
@@ -22,6 +22,8 @@ const ExplainTrafficChangeInputSchema = z.object({
   timestamp: z.string().describe('The current timestamp.'),
   carVolume: z.number().describe('The current volume of cars.'),
   motorcycleVolume: z.number().describe('The current volume of motorcycles.'),
+  weather: z.string().describe('The current weather condition (e.g., Sunny, Cloudy, Rainy).'),
+  temperature: z.number().describe('The current temperature in Celsius.'),
 });
 export type ExplainTrafficChangeInput = z.infer<typeof ExplainTrafficChangeInputSchema>;
 
@@ -44,6 +46,7 @@ const prompt = ai.definePrompt({
 
   Location: {{{location}}}
   Timestamp: {{{timestamp}}}
+  Weather: {{{weather}}}, {{{temperature}}}°C
 
   Data Comparison:
   - Previous State: {{{previousTotalVolume}}} vehicles at {{{previousAverageSpeed}}} km/h (Status: {{{previousTrafficStatus}}})
@@ -57,7 +60,8 @@ const prompt = ai.definePrompt({
   1.  Start by stating the dominant vehicle type (e.g., "Motorcycles continue to dominate the traffic flow...").
   2.  Comment on the current average speed and what it means for travel time (e.g., "...with the average speed holding at a slow {{{currentAverageSpeed}}} km/h, indicating significant travel delays.").
   3.  Explain the *change* in traffic volume and speed, linking them together (e.g., "There has been a slight increase in total vehicle volume, which is contributing to the drop in speed.").
-  4.  Conclude with a summary of the overall situation.
+  4.  Incorporate the weather information into the analysis (e.g., "The clear weather is encouraging more motorcyclists onto the road...").
+  5.  Conclude with a summary of the overall situation.
 
   Do not use lists or bullet points. Provide a single, well-written paragraph.
   `,

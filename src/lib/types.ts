@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export type TrafficStatus = 'Smooth' | 'Moderate' | 'Heavy';
 
+export type WeatherCondition = 'Sunny' | 'Cloudy' | 'Rainy' | 'Thunderstorm';
+
 export interface TrafficData {
   timestamp: string;
   location: string;
@@ -12,6 +14,8 @@ export interface TrafficData {
   traffic_status: TrafficStatus;
   congestion_factor: string;
   explanation: string;
+  weather: WeatherCondition;
+  temperature: number;
 }
 
 export const SimulateVehicleCrossingInputSchema = z.object({
