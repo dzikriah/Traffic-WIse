@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataLog from './data-log';
+import TrafficMap from './traffic-map';
 
 const initialTrafficData: TrafficData = {
   timestamp: '',
@@ -56,7 +57,7 @@ export default function Dashboard() {
   isLoadingRef.current = isLoading;
 
   const runStep = useCallback(async () => {
-    const forDashboard = activeTabRef.current === 'dashboard';
+    const forDashboard = activeTabRef.current === 'dashboard' || activeTabRef.current === 'map';
     if (forDashboard && !isLoadingRef.current) {
       setIsLoading(true);
     } else if (!forDashboard) {
@@ -107,6 +108,7 @@ export default function Dashboard() {
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="data-log">Data</TabsTrigger>
+          <TabsTrigger value="map">Map</TabsTrigger>
         </TabsList>
       </div>
 
@@ -212,6 +214,9 @@ export default function Dashboard() {
       </TabsContent>
       <TabsContent value="data-log" className="mt-0">
         <DataLog currentTrafficStatus={trafficData.traffic_status} isVisible={activeTab === 'data-log'} />
+      </TabsContent>
+      <TabsContent value="map" className="mt-0">
+        <TrafficMap trafficStatus={trafficData.traffic_status} location={trafficData.location} />
       </TabsContent>
     </Tabs>
   );
