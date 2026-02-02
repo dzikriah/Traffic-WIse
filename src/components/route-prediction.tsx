@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getRoutePrediction } from '@/lib/actions';
 import { type PredictRouteOutput } from '@/lib/types';
-import { Map, Clock, Route } from 'lucide-react';
+import { Map, Clock, Route, Milestone } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
@@ -86,6 +86,10 @@ export default function RoutePrediction({ location, trafficStatus }: RoutePredic
               </div>
               <div className="flex items-center gap-4">
                 <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-6 w-1/4" />
+              </div>
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-6 w-6 rounded-full" />
                 <Skeleton className="h-6 w-2/3" />
               </div>
                <Skeleton className="h-10 w-full" />
@@ -97,8 +101,15 @@ export default function RoutePrediction({ location, trafficStatus }: RoutePredic
               <div className="flex items-start gap-3">
                 <Clock className="h-5 w-5 mt-1 text-muted-foreground" />
                 <div>
-                  <p className="font-semibold">{prediction.predictedTravelTime} minutes</p>
+                  <p className="font-semibold">{prediction.predictedTravelTime}</p>
                   <p className="text-sm text-muted-foreground">Predicted Travel Time</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Milestone className="h-5 w-5 mt-1 text-muted-foreground" />
+                <div>
+                  <p className="font-semibold">{prediction.distance}</p>
+                  <p className="text-sm text-muted-foreground">Estimated Distance</p>
                 </div>
               </div>
                <div className="flex items-start gap-3">

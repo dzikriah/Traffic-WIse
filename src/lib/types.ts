@@ -39,8 +39,9 @@ export const PredictRouteInputSchema = z.object({
 export type PredictRouteInput = z.infer<typeof PredictRouteInputSchema>;
 
 export const PredictRouteOutputSchema = z.object({
-    predictedTravelTime: z.string().describe('The predicted travel time in minutes.'),
+    predictedTravelTime: z.string().describe('The predicted travel time in minutes (e.g., "25-35 minutes").'),
     suggestedRoute: z.string().describe('The suggested route to take.'),
+    distance: z.string().describe('The predicted distance in kilometers (e.g., "15.2 km").'),
     explanation: z.string().describe('An explanation for the route suggestion based on traffic.'),
 });
 export type PredictRouteOutput = z.infer<typeof PredictRouteOutputSchema>;

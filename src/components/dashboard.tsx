@@ -122,6 +122,7 @@ export default function Dashboard() {
         </div>
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="route-prediction">Route Prediction</TabsTrigger>
           <TabsTrigger value="data-log">Data</TabsTrigger>
           <TabsTrigger value="map">Map</TabsTrigger>
         </TabsList>
@@ -205,8 +206,8 @@ export default function Dashboard() {
             isLoading={isLoading}
           />
         </div>
-        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-4 md:space-y-8">
+        <div className="grid grid-cols-1 gap-4 md:gap-8">
+          <div className="space-y-4 md:space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -243,10 +244,10 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-          <div className="lg:col-span-1">
-            <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
-          </div>
         </div>
+      </TabsContent>
+      <TabsContent value="route-prediction" className="mt-0">
+        <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
       </TabsContent>
       <TabsContent value="data-log" className="mt-0">
         <DataLog currentTrafficStatus={trafficData.traffic_status} isVisible={activeTab === 'data-log'} />

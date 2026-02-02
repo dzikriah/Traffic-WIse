@@ -268,8 +268,9 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
             default: time = '20-40';
         }
         return {
-            predictedTravelTime: time,
+            predictedTravelTime: `${time} minutes`,
             suggestedRoute: `Main roads like Jl. Sudirman or Jl. Gatot Subroto.`,
+            distance: 'approx. 10-20 km',
             explanation: `AI prediction failed. Based on ${input.trafficStatus} traffic, the trip could take ${time} minutes.`
         }
     }
