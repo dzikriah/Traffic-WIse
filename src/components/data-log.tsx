@@ -26,28 +26,24 @@ export default function DataLog({ currentTrafficStatus, isVisible }: DataLogProp
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchVehicleEvents = useCallback(async () => {
-    if(!isVisible) return;
     const newEvents = await getRealtimeVehicleEvents(currentTrafficStatus);
     setVehicleEvents(prev => [...newEvents, ...prev].slice(0, 100));
     setIsLoading(false);
-  }, [currentTrafficStatus, isVisible]);
+  }, [currentTrafficStatus]);
 
   useEffect(() => {
-    if(!isVisible) {
-      if(vehicleEvents.length > 0) setVehicleEvents([]);
+    if (!isVisible) {
+      setVehicleEvents([]);
       setIsLoading(true);
       return;
-    };
-
-    if (vehicleEvents.length === 0) {
-      setIsLoading(true);
-      fetchVehicleEvents();
     }
 
+    setIsLoading(true);
+    fetchVehicleEvents();
     const intervalId = setInterval(fetchVehicleEvents, 2000); 
 
     return () => clearInterval(intervalId);
-  }, [fetchVehicleEvents, isVisible, vehicleEvents.length]);
+  }, [isVisible, fetchVehicleEvents]);
 
   if (!isVisible) return null;
 
