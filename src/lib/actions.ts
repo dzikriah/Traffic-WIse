@@ -66,7 +66,7 @@ export async function runSimulationStep(
     Heavy: [
       { factor: 'Peak Hour Congestion', explanation: 'Severe congestion is occurring due to a high volume of vehicles, typical of rush hour. This widespread slowdown is affecting both main roads and arteries, leading to significant and predictable travel delays.' },
       { factor: 'Gridlock Conditions', explanation: 'Traffic is approaching a standstill. The current volume has oversaturated the road network, causing average speeds to drop to extremely low levels. Movement is intermittent and highly restricted.' },
-      { factor: 'Volume Exceeds Capacity', explanation: 'The number of vehicles has surpassed the road\'s designed capacity. This has resulted in a system-wide breakdown of traffic flow, characterized by widespread, slow-moving queues and exceptionally long travel times.' },
+      { factor: 'Volume Exceeds Capacity', explanation: "The number of vehicles has surpassed the road's designed capacity. This has resulted in a system-wide breakdown of traffic flow, characterized by widespread, slow-moving queues and exceptionally long travel times." },
     ]
   };
   
