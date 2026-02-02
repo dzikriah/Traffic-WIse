@@ -7,14 +7,14 @@ import type {
 } from '@/lib/types';
 
 const getTrafficStatus = (totalVolume: number): TrafficStatus => {
-  if (totalVolume <= 150) return 'Smooth';
-  if (totalVolume <= 300) return 'Moderate';
+  if (totalVolume <= 80) return 'Smooth';
+  if (totalVolume <= 150) return 'Moderate';
   return 'Heavy';
 };
 
 const initialTrafficData: TrafficData = {
   timestamp: '',
-  location: 'Jl. Jenderal Sudirman, Jakarta',
+  location: 'Jl. M.H. Thamrin, Jakarta',
   total_volume: 0,
   car_volume: 0,
   motorcycle_volume: 0,

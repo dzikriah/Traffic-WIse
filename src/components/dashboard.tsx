@@ -24,7 +24,7 @@ import TrafficMap from './traffic-map';
 
 const initialTrafficData: TrafficData = {
   timestamp: '',
-  location: 'Jl. Jenderal Sudirman, Jakarta',
+  location: 'Jl. M.H. Thamrin, Jakarta',
   total_volume: 0,
   car_volume: 0,
   motorcycle_volume: 0,
