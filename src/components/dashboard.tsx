@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataLog from './data-log';
 import TrafficMap from './traffic-map';
+import RoutePrediction from './route-prediction';
 
 const initialTrafficData: TrafficData = {
   timestamp: '',
@@ -205,7 +206,7 @@ export default function Dashboard() {
           />
         </div>
         <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LineChartIcon className="h-5 w-5" />
@@ -216,7 +217,9 @@ export default function Dashboard() {
               <TrafficChart data={history} isLoading={isLoading} />
             </CardContent>
           </Card>
-          <Card>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
+          <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrafficCone className="h-5 w-5" />
@@ -240,6 +243,7 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+          <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
         </div>
       </TabsContent>
       <TabsContent value="data-log" className="mt-0">

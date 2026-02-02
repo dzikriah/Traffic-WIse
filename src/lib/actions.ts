@@ -5,11 +5,14 @@ import {
   type ExplainTrafficChangeInput,
 } from '@/ai/flows/explain-traffic-changes';
 import { getWeather } from '@/ai/flows/get-weather';
+import { predictRoute } from '@/ai/flows/predict-route-flow';
 import type {
   TrafficData,
   TrafficStatus,
   SimulateVehicleCrossingOutput,
   WeatherCondition,
+  PredictRouteInput,
+  PredictRouteOutput,
 } from '@/lib/types';
 
 const getTrafficStatus = (totalVolume: number): TrafficStatus => {
@@ -248,4 +251,26 @@ export async function getRealtimeVehicleEvents(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )
   );
+}
+
+export async function getRoutePrediction(input: PredictRouteInput): Promise<PredictRouteOutput> {
+    try {
+        const prediction = await predictRoute(input);
+        return prediction;
+    } catch (error) {
+        console.error('AI route prediction failed:', error);
+        // Fallback to a simple estimation if AI fails
+        let time;
+        switch (input.trafficStatus) {
+            case 'Smooth': time = '15-25'; break;
+            case 'Moderate': time = '30-45'; break;
+            case 'Heavy': time = '50-70'; break;
+            default: time = '20-40';
+        }
+        return {
+            predictedTravelTime: time,
+            suggestedRoute: `Main roads like Jl. Sudirman or Jl. Gatot Subroto.`,
+            explanation: `AI prediction failed. Based on ${input.trafficStatus} traffic, the trip could take ${time} minutes.`
+        }
+    }
 }

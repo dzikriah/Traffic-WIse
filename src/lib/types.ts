@@ -29,3 +29,18 @@ export const SimulateVehicleCrossingOutputSchema = z.object({
   speed: z.number().describe('The speed of the vehicle in km/h.'),
 });
 export type SimulateVehicleCrossingOutput = z.infer<typeof SimulateVehicleCrossingOutputSchema>;
+
+
+export const PredictRouteInputSchema = z.object({
+    location: z.string().describe('The starting location.'),
+    destination: z.string().describe('The destination location.'),
+    trafficStatus: z.string().describe("The current traffic status ('Smooth', 'Moderate', or 'Heavy')."),
+  });
+export type PredictRouteInput = z.infer<typeof PredictRouteInputSchema>;
+
+export const PredictRouteOutputSchema = z.object({
+    predictedTravelTime: z.string().describe('The predicted travel time in minutes.'),
+    suggestedRoute: z.string().describe('The suggested route to take.'),
+    explanation: z.string().describe('An explanation for the route suggestion based on traffic.'),
+});
+export type PredictRouteOutput = z.infer<typeof PredictRouteOutputSchema>;

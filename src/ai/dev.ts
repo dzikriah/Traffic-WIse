@@ -8,3 +8,4 @@ import '@/ai/flows/adjust-toll-gate-dynamically.ts';
 import '@/ai/flows/simulate-traffic-volume-variation.ts';
 import '@/ai/flows/get-weather.ts';
 import '@/ai/flows/simulate-vehicle-crossing.ts';
+import '@/ai/flows/predict-route-flow.ts';
