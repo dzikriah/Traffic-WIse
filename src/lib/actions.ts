@@ -55,16 +55,18 @@ export async function runSimulationStep(
   // 4. Generate a varied congestion analysis based on status
   const analysisByStatus = {
     Smooth: [
-      { factor: 'Lalu Lintas Lancar', explanation: 'Kondisi lalu lintas sangat ideal, kendaraan melaju tanpa hambatan.' },
-      { factor: 'Arus Normal', explanation: 'Arus lalu lintas normal untuk jam-jam sepi. Tidak ada penumpukan kendaraan.' },
+      { factor: 'Optimal Flow', explanation: 'Traffic is flowing smoothly with minimal delays. Ideal travel conditions.' },
+      { factor: 'Light Volume', explanation: 'Vehicle volume is low, allowing for high average speeds and no significant congestion.' },
     ],
     Moderate: [
-      { factor: 'Kepadatan Meningkat', explanation: 'Volume kendaraan mulai meningkat, menyebabkan sedikit perlambatan di beberapa titik.' },
-      { factor: 'Antrian di Persimpangan', explanation: 'Terjadi antrian di persimpangan atau lampu merah, namun masih terkendali.' },
+      { factor: 'Increasing Density', explanation: 'Vehicle volume is rising, causing minor slowdowns, particularly around intersections.' },
+      { factor: 'Intersection Queues', explanation: 'Minor queues are forming at traffic lights, but traffic is still moving through steadily.' },
+      { factor: 'Slight Speed Reduction', explanation: 'A higher number of vehicles on the road is leading to a slight decrease in average speed.' },
     ],
     Heavy: [
-      { factor: 'Jam Sibuk Pagi/Sore', explanation: 'Kemacetan parah terjadi akibat volume kendaraan yang sangat tinggi pada jam sibuk.' },
-      { factor: 'Kemacetan Total', explanation: 'Lalu lintas nyaris tidak bergerak. Kecepatan rata-rata sangat rendah.' },
+      { factor: 'Peak Hour Congestion', explanation: 'Severe congestion due to high vehicle volume typical of rush hour. Expect significant delays.' },
+      { factor: 'Gridlock Conditions', explanation: 'Traffic is nearly at a standstill. Average speed is extremely low due to oversaturation.' },
+      { factor: 'Volume Exceeds Capacity', explanation: 'The number of vehicles has exceeded the road\'s capacity, resulting in widespread and slow-moving traffic.' },
     ]
   };
   
