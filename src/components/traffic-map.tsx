@@ -34,15 +34,15 @@ export default function TrafficMap({ trafficStatus, location }: TrafficMapProps)
           )}
           <div
             className={cn(
-              'absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse-deep',
-              'top-[45%] left-[55%]', 
-              'transition-opacity duration-500',
+              'absolute w-4 h-4 rounded-full border-2 border-white shadow-lg transition-colors duration-500',
+              'top-[45%] left-[55%]',
               {
-                'opacity-100': trafficStatus === 'Heavy',
-                'opacity-0': trafficStatus !== 'Heavy',
+                'bg-green-500': trafficStatus === 'Smooth',
+                'bg-amber-500': trafficStatus === 'Moderate',
+                'bg-red-500 animate-pulse-deep': trafficStatus === 'Heavy',
               }
             )}
-            title={`Heavy traffic at ${location}`}
+            title={`Traffic at ${location} is ${trafficStatus}`}
           ></div>
         </div>
       </CardContent>

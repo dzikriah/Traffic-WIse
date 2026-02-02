@@ -55,18 +55,16 @@ export async function runSimulationStep(
   // 4. Generate a varied congestion analysis based on status
   const analysisByStatus = {
     Smooth: [
-      { factor: 'Off-Peak Flow', explanation: 'Traffic is flowing very smoothly, typical for off-peak hours or late at night.' },
-      { factor: 'Excellent Flow', explanation: 'Ideal road conditions. Traffic is moving without any significant obstructions.' },
+      { factor: 'Lalu Lintas Lancar', explanation: 'Kondisi lalu lintas sangat ideal, kendaraan melaju tanpa hambatan.' },
+      { factor: 'Arus Normal', explanation: 'Arus lalu lintas normal untuk jam-jam sepi. Tidak ada penumpukan kendaraan.' },
     ],
     Moderate: [
-      { factor: 'Building Congestion', explanation: 'Vehicle volume is increasing, often seen leading into the morning or evening rush hour.' },
-      { factor: 'Intersection Delays', explanation: 'Density is causing minor delays and queuing at major intersections.' },
-      { factor: 'Weekend Traffic', explanation: 'Typical weekend traffic patterns. Busy, but vehicles are still moving at a steady pace.' },
+      { factor: 'Kepadatan Meningkat', explanation: 'Volume kendaraan mulai meningkat, menyebabkan sedikit perlambatan di beberapa titik.' },
+      { factor: 'Antrian di Persimpangan', explanation: 'Terjadi antrian di persimpangan atau lampu merah, namun masih terkendali.' },
     ],
     Heavy: [
-      { factor: 'Morning Rush Hour', explanation: 'Peak morning congestion. Extremely high vehicle volume is causing severe delays.' },
-      { factor: 'Evening Commute', explanation: 'Severe jams are occurring during the evening commute. Average speed is critically low.' },
-      { factor: 'Gridlock', explanation: 'Traffic is nearly at a standstill. This may be due to extreme volume or a road incident.' },
+      { factor: 'Jam Sibuk Pagi/Sore', explanation: 'Kemacetan parah terjadi akibat volume kendaraan yang sangat tinggi pada jam sibuk.' },
+      { factor: 'Kemacetan Total', explanation: 'Lalu lintas nyaris tidak bergerak. Kecepatan rata-rata sangat rendah.' },
     ]
   };
   
