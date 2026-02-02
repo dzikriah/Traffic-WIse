@@ -55,18 +55,18 @@ export async function runSimulationStep(
   // 4. Generate a varied congestion analysis based on status
   const analysisByStatus = {
     Smooth: [
-      { factor: 'Optimal Flow', explanation: 'Traffic is flowing smoothly with minimal delays. Ideal travel conditions.' },
-      { factor: 'Light Volume', explanation: 'Vehicle volume is low, allowing for high average speeds and no significant congestion.' },
+      { factor: 'Optimal Flow', explanation: 'Traffic is flowing smoothly with minimal delays. This indicates a well-balanced traffic distribution and efficient signal timing, allowing for ideal travel conditions.' },
+      { factor: 'Light Volume', explanation: 'Vehicle volume is significantly low, resulting in high average speeds and no notable congestion. This period is optimal for travel, with clear roads and no interruptions.' },
     ],
     Moderate: [
-      { factor: 'Increasing Density', explanation: 'Vehicle volume is rising, causing minor slowdowns, particularly around intersections.' },
-      { factor: 'Intersection Queues', explanation: 'Minor queues are forming at traffic lights, but traffic is still moving through steadily.' },
-      { factor: 'Slight Speed Reduction', explanation: 'A higher number of vehicles on the road is leading to a slight decrease in average speed.' },
+      { factor: 'Increasing Density', explanation: 'Vehicle volume is steadily rising, leading to increased traffic density. This is causing minor slowdowns, particularly around major intersections and commercial areas, as the system approaches its capacity.' },
+      { factor: 'Intersection Queues', explanation: 'Minor queues are beginning to form at traffic lights, suggesting that signal cycles are becoming saturated. While traffic is still moving, expect short but noticeable waiting times at key junctions.' },
+      { factor: 'Slight Speed Reduction', explanation: 'A higher number of vehicles on the road is causing a discernible decrease in average travel speed. The flow is becoming less fluid as drivers adjust to the increased proximity of other vehicles.' },
     ],
     Heavy: [
-      { factor: 'Peak Hour Congestion', explanation: 'Severe congestion due to high vehicle volume typical of rush hour. Expect significant delays.' },
-      { factor: 'Gridlock Conditions', explanation: 'Traffic is nearly at a standstill. Average speed is extremely low due to oversaturation.' },
-      { factor: 'Volume Exceeds Capacity', explanation: 'The number of vehicles has exceeded the road\'s capacity, resulting in widespread and slow-moving traffic.' },
+      { factor: 'Peak Hour Congestion', explanation: 'Severe congestion is occurring due to a high volume of vehicles, typical of rush hour. This widespread slowdown is affecting both main roads and arteries, leading to significant and predictable travel delays.' },
+      { factor: 'Gridlock Conditions', explanation: 'Traffic is approaching a standstill. The current volume has oversaturated the road network, causing average speeds to drop to extremely low levels. Movement is intermittent and highly restricted.' },
+      { factor: 'Volume Exceeds Capacity', explanation: 'The number of vehicles has surpassed the road\'s designed capacity. This has resulted in a system-wide breakdown of traffic flow, characterized by widespread, slow-moving queues and exceptionally long travel times.' },
     ]
   };
   
