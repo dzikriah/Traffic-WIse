@@ -206,44 +206,46 @@ export default function Dashboard() {
           />
         </div>
         <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChartIcon className="h-5 w-5" />
-                Vehicle Volume History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrafficChart data={history} isLoading={isLoading} />
-            </CardContent>
-          </Card>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-3">
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrafficCone className="h-5 w-5" />
-                Congestion Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading && !trafficData.explanation ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm font-medium text-foreground">{trafficData.congestion_factor}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {trafficData.explanation}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
+          <div className="lg:col-span-2 space-y-4 md:space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChartIcon className="h-5 w-5" />
+                  Vehicle Volume History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TrafficChart data={history} isLoading={isLoading} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrafficCone className="h-5 w-5" />
+                  Congestion Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading && !trafficData.explanation ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{trafficData.congestion_factor}</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {trafficData.explanation}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-1">
+            <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
+          </div>
         </div>
       </TabsContent>
       <TabsContent value="data-log" className="mt-0">

@@ -53,7 +53,7 @@ export default function RoutePrediction({ location, trafficStatus }: RoutePredic
   };
 
   return (
-    <Card className="lg:col-span-2">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Map className="h-5 w-5" />
