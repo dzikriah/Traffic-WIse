@@ -20,11 +20,15 @@ const ExplainTrafficChangeInputSchema = z.object({
   previousTrafficStatus: z.string().describe('The previous traffic status.'),
   currentTrafficStatus: z.string().describe('The current traffic status.'),
   timestamp: z.string().describe('The current timestamp.'),
+  carVolume: z.number().describe('The current volume of cars.'),
+  motorcycleVolume: z.number().describe('The current volume of motorcycles.'),
 });
 export type ExplainTrafficChangeInput = z.infer<typeof ExplainTrafficChangeInputSchema>;
 
 const ExplainTrafficChangeOutputSchema = z.object({
-  explanation: z.string().describe('An explanation for the traffic changes.'),
+  explanation: z
+    .string()
+    .describe('A single, insightful paragraph analyzing the traffic changes.'),
 });
 export type ExplainTrafficChangeOutput = z.infer<typeof ExplainTrafficChangeOutputSchema>;
 
@@ -36,14 +40,26 @@ const prompt = ai.definePrompt({
   name: 'explainTrafficChangePrompt',
   input: {schema: ExplainTrafficChangeInputSchema},
   output: {schema: ExplainTrafficChangeOutputSchema},
-  prompt: `You are an AI that explains changes in urban traffic conditions in Jakarta.
+  prompt: `You are a sophisticated traffic analysis AI for Jakarta. Your task is to provide an insightful, one-paragraph analysis of the traffic situation based on the data provided.
 
-  Here's the current situation at {{{location}}}:
+  Location: {{{location}}}
   Timestamp: {{{timestamp}}}
-  Previous Traffic Status: {{{previousTrafficStatus}}} (Volume: {{{previousTotalVolume}}}, Speed: {{{previousAverageSpeed}}} km/h)
-  Current Traffic Status: {{{currentTrafficStatus}}} (Volume: {{{currentTotalVolume}}}, Speed: {{{currentAverageSpeed}}} km/h)
 
-  Explain the change in traffic conditions in a concise and easy-to-understand manner for a general audience. Focus on the most significant changes (volume and/or speed) and their likely impact.
+  Data Comparison:
+  - Previous State: {{{previousTotalVolume}}} vehicles at {{{previousAverageSpeed}}} km/h (Status: {{{previousTrafficStatus}}})
+  - Current State: {{{currentTotalVolume}}} vehicles at {{{currentAverageSpeed}}} km/h (Status: {{{currentTrafficStatus}}})
+
+  Current Vehicle Breakdown:
+  - Cars: {{{carVolume}}}
+  - Motorcycles: {{{motorcycleVolume}}}
+
+  Based on this data, generate a fluid, insightful paragraph. Your analysis MUST:
+  1.  Start by stating the dominant vehicle type (e.g., "Motorcycles continue to dominate the traffic flow...").
+  2.  Comment on the current average speed and what it means for travel time (e.g., "...with the average speed holding at a slow {{{currentAverageSpeed}}} km/h, indicating significant travel delays.").
+  3.  Explain the *change* in traffic volume and speed, linking them together (e.g., "There has been a slight increase in total vehicle volume, which is contributing to the drop in speed.").
+  4.  Conclude with a summary of the overall situation.
+
+  Do not use lists or bullet points. Provide a single, well-written paragraph.
   `,
 });
 

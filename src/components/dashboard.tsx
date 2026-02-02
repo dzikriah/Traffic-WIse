@@ -91,7 +91,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     runStep(); // Initial run
-    const intervalId = setInterval(runStep, 7000);
+    const intervalId = setInterval(runStep, 15000);
 
     return () => clearInterval(intervalId);
   }, [runStep]);
