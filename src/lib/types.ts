@@ -35,13 +35,18 @@ export const PredictRouteInputSchema = z.object({
     location: z.string().describe('The starting location.'),
     destination: z.string().describe('The destination location.'),
     trafficStatus: z.string().describe("The current traffic status ('Smooth', 'Moderate', or 'Heavy')."),
+    weather: z.string().describe('The current weather condition (e.g., Sunny, Cloudy, Rainy).'),
+    temperature: z.number().describe('The current temperature in Celsius.'),
   });
 export type PredictRouteInput = z.infer<typeof PredictRouteInputSchema>;
 
 export const PredictRouteOutputSchema = z.object({
     predictedTravelTime: z.string().describe('The predicted travel time in minutes (e.g., "25-35 minutes").'),
-    suggestedRoute: z.string().describe('The suggested route to take.'),
+    suggestedRoute: z.string().describe('The suggested primary route to take.'),
     distance: z.string().describe('The predicted distance in kilometers (e.g., "15.2 km").'),
     explanation: z.string().describe('An explanation for the route suggestion based on traffic.'),
+    transportSuggestion: z.string().describe('A suggestion for the best mode of transport (e.g., "Private car recommended", "Consider using the MRT to avoid rain and traffic.").'),
+    weatherInfo: z.string().describe('A brief note on how the current weather might impact the journey.'),
+    alternativeRoute: z.string().optional().describe('An optional alternative route.'),
 });
 export type PredictRouteOutput = z.infer<typeof PredictRouteOutputSchema>;

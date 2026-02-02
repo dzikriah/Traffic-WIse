@@ -260,29 +260,44 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
     } catch (error) {
         console.error('AI route prediction failed:', error);
         // Fallback to a simple estimation if AI fails
-        let time, explanation;
+        let time, explanation, transportSuggestion, weatherInfo;
+        
+        weatherInfo = `Weather is ${input.weather} at ${input.temperature}°C. This may affect travel conditions.`;
+
         switch (input.trafficStatus) {
             case 'Smooth': 
                 time = '15-25'; 
-                explanation = "AI prediction is currently unavailable. With smooth traffic, your trip should be relatively quick using main roads.";
+                explanation = "With smooth traffic, your trip should be relatively quick. Main roads are the best option.";
+                transportSuggestion = "A private vehicle or motorcycle will be efficient.";
                 break;
             case 'Moderate': 
                 time = '30-45'; 
-                explanation = "AI prediction is currently unavailable. Based on moderate traffic, expect some slowdowns, particularly on major arteries.";
+                explanation = "Expect some slowdowns due to moderate traffic, particularly on major arteries. Plan for some extra time.";
+                transportSuggestion = "Consider using a ride-hailing service to avoid parking hassles. The MRT is also a good alternative for routes it covers.";
                 break;
             case 'Heavy': 
                 time = '50-70';
-                explanation = "AI prediction is currently unavailable. Given the heavy congestion, significant delays are likely. It's advisable to postpone or seek alternative routes if possible.";
+                explanation = "Significant delays are likely due to heavy congestion. It's advisable to postpone travel or seek alternative routes if possible.";
+                transportSuggestion = "Public transport like the TransJakarta busway or MRT is strongly recommended to bypass the worst of the traffic.";
                 break;
             default: 
                 time = '20-40';
-                explanation = "AI prediction is currently unavailable. Traffic impact is uncertain, but a general travel estimate is provided.";
+                explanation = "Traffic impact is uncertain, but a general travel estimate is provided.";
+                transportSuggestion = "Check a live map before departing to choose the best transport method.";
         }
+        
+        if (input.weather === 'Rainy' || input.weather === 'Thunderstorm') {
+            transportSuggestion += " A car or public transport is preferable to a motorcycle in the rain."
+        }
+
         return {
             predictedTravelTime: `${time} minutes`,
             suggestedRoute: `Main roads (e.g., Jl. Sudirman)`,
             distance: 'Not available',
-            explanation: explanation
+            explanation: `AI prediction is currently unavailable. ${explanation}`,
+            transportSuggestion: transportSuggestion,
+            weatherInfo: weatherInfo,
+            // alternativeRoute is optional, so it can be omitted in the fallback.
         }
     }
 }

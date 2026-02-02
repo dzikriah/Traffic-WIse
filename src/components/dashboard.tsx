@@ -247,7 +247,12 @@ export default function Dashboard() {
         </div>
       </TabsContent>
       <TabsContent value="route-prediction" className="mt-0">
-        <RoutePrediction location={trafficData.location} trafficStatus={trafficData.traffic_status} />
+        <RoutePrediction 
+          location={trafficData.location} 
+          trafficStatus={trafficData.traffic_status}
+          weather={trafficData.weather}
+          temperature={trafficData.temperature}
+        />
       </TabsContent>
       <TabsContent value="data-log" className="mt-0">
         <DataLog currentTrafficStatus={trafficData.traffic_status} isVisible={activeTab === 'data-log'} />
