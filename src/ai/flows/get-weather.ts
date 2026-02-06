@@ -36,8 +36,12 @@ const prompt = ai.definePrompt({
 
 Location: {{{location}}}
 
-The weather can only be one of 'Sunny', 'Cloudy', 'Rainy', or 'Thunderstorm'.
-The temperature should be a realistic number for the location (e.g., Jakarta is usually between 25-33°C).
+Instructions:
+1. The weather can only be one of 'Sunny', 'Cloudy', 'Rainy', or 'Thunderstorm'.
+2. The temperature should be realistic for Jakarta (range between 24°C at night/rain to 34°C in a hot day).
+3. Do not always return 30°C. Vary the output based on common weather patterns. 
+   - If 'Rainy' or 'Thunderstorm', temperatures should be lower (24-27°C).
+   - If 'Sunny', temperatures should be higher (30-34°C).
 
 Respond with valid JSON.`,
 });

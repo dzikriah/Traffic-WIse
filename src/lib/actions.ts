@@ -32,7 +32,7 @@ const initialTrafficData: TrafficData = {
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
   weather: 'Sunny',
-  temperature: 30,
+  temperature: 30.5,
 };
 
 export async function runSimulationStep(
@@ -43,44 +43,52 @@ export async function runSimulationStep(
     : initialTrafficData;
 
   // 1. Simulate new traffic volumes with randomness
-  const carChange = Math.floor(Math.random() * 50) - 20; // Fluctuation between -20 and +29
-  const motorcycleChange = Math.floor(Math.random() * 70) - 30; // Fluctuation between -30 and +39
+  const carChange = Math.floor(Math.random() * 50) - 20;
+  const motorcycleChange = Math.floor(Math.random() * 70) - 30;
 
   let newCarVolume = currentData.car_volume + carChange;
   let newMotorcycleVolume = currentData.motorcycle_volume + motorcycleChange;
 
-  // Ensure volumes are within a realistic range
   newCarVolume = Math.max(20, Math.min(newCarVolume, 250));
   newMotorcycleVolume = Math.max(30, Math.min(newMotorcycleVolume, 350));
 
   const newTotalVolume = newCarVolume + newMotorcycleVolume;
 
-  // 2. Simulate new average speed (inversely related to volume)
+  // 2. Simulate new average speed
   const baseSpeed = 70;
   const reductionPerVehicle = 0.08;
   let newAverageSpeed = baseSpeed - newTotalVolume * reductionPerVehicle;
-  newAverageSpeed += Math.floor(Math.random() * 10) - 5; // Add some random variance
-  newAverageSpeed = Math.max(5, Math.min(newAverageSpeed, 60)); // Clamp speed within 5-60 km/h
+  newAverageSpeed += Math.floor(Math.random() * 10) - 5;
+  newAverageSpeed = Math.max(5, Math.min(newAverageSpeed, 60));
 
-  // 3. Determine new traffic status
   const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-  // 4. Get weather data
+  // 3. Get weather data with dynamic fluctuations
   let weatherData = {
     weather: currentData.weather,
     temperature: currentData.temperature,
   };
+  
   try {
-      weatherData = await getWeather({ location: currentData.location });
+    const aiWeather = await getWeather({ location: currentData.location });
+    // Add a small jitter (-0.5 to +0.5) to make it feel "live" and avoid getting "stuck"
+    const jitter = (Math.random() - 0.5);
+    weatherData = {
+      weather: aiWeather.weather,
+      temperature: Math.round((aiWeather.temperature + jitter) * 10) / 10,
+    };
   } catch (error) {
-      console.error('AI weather fetch failed:', error);
-      // On failure, use previous data or a default as fallback
+    console.error('AI weather fetch failed:', error);
+    // Drift the temperature slightly if AI fails to keep it dynamic
+    const drift = (Math.random() * 0.4 - 0.2);
+    weatherData.temperature = Math.round((weatherData.temperature + drift) * 10) / 10;
+    weatherData.temperature = Math.max(24, Math.min(weatherData.temperature, 35));
   }
 
-  // 5. Generate AI-powered congestion analysis
+  // 4. Generate AI-powered congestion analysis
   let analysis = {
     congestion_factor: 'Analysis pending...',
-    explanation: 'Awaiting AI analysis of the current traffic data...',
+    explanation: 'Awaiting AI analysis...',
   };
 
   try {
@@ -101,48 +109,20 @@ export async function runSimulationStep(
 
     const { explanation } = await explainTrafficChange(aiInput);
     const dominantVehicle =
-      newCarVolume > newMotorcycleVolume ? 'Car Volume' : 'Motorcycle Volume';
+      newCarVolume > newMotorcycleVolume ? 'Car Dominance' : 'Motorcycle Dominance';
 
     analysis = {
-      congestion_factor: `Dominant Vehicle: ${dominantVehicle}`,
+      congestion_factor: `${dominantVehicle} (${newTrafficStatus})`,
       explanation: explanation,
     };
   } catch (error) {
     console.error('AI analysis failed:', error);
-    // Fallback logic
-    const analysisByStatus = {
-      Smooth: [
-        {
-          factor: 'Optimal Flow',
-          explanation:
-            'Traffic is flowing smoothly with minimal delays. This indicates a well-balanced traffic distribution and efficient signal timing, allowing for ideal travel conditions.',
-        },
-      ],
-      Moderate: [
-        {
-          factor: 'Increasing Density',
-          explanation:
-            'Vehicle volume is steadily rising, leading to increased traffic density. This is causing minor slowdowns, particularly around major intersections.',
-        },
-      ],
-      Heavy: [
-        {
-          factor: 'Peak Hour Congestion',
-          explanation:
-            'Severe congestion is occurring due to a high volume of vehicles, typical of rush hour. Movement is intermittent and highly restricted.',
-        },
-      ],
-    };
-    const possibleAnalyses = analysisByStatus[newTrafficStatus];
-    const fallbackAnalysis =
-      possibleAnalyses[Math.floor(Math.random() * possibleAnalyses.length)];
     analysis = {
-      congestion_factor: fallbackAnalysis.factor,
-      explanation: `AI analysis failed. Reverting to basic analysis: ${fallbackAnalysis.explanation}`,
+      congestion_factor: `System Baseline: ${newTrafficStatus}`,
+      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with a total of ${newTotalVolume} vehicles. Average speed is currently ${Math.round(newAverageSpeed)} km/h.`,
     };
   }
 
-  // 6. Return the new comprehensive traffic data
   return {
     timestamp: new Date().toISOString(),
     location: currentData.location,
@@ -164,7 +144,7 @@ export async function getRealtimeVehicleEvents(
   const vehicleTypes = ['Car', 'Motorcycle', 'Bus', 'Truck'] as const;
   type VehicleType = (typeof vehicleTypes)[number];
 
-  const numberOfEvents = Math.floor(Math.random() * 4) + 2; // Generate 2 to 5 events
+  const numberOfEvents = Math.floor(Math.random() * 4) + 2;
   const events: SimulateVehicleCrossingOutput[] = [];
   const now = Date.now();
 
@@ -176,23 +156,13 @@ export async function getRealtimeVehicleEvents(
     let maxSpeed = 0;
 
     switch (trafficStatus) {
-      case 'Smooth':
-        minSpeed = 30; maxSpeed = 55;
-        break;
-      case 'Moderate':
-        minSpeed = 15; maxSpeed = 35;
-        break;
-      case 'Heavy':
-        minSpeed = 0; maxSpeed = 15;
-        break;
+      case 'Smooth': minSpeed = 30; maxSpeed = 55; break;
+      case 'Moderate': minSpeed = 15; maxSpeed = 35; break;
+      case 'Heavy': minSpeed = 2; maxSpeed = 15; break;
     }
 
-    const speed =
-      Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
-
-    const timestamp = new Date(
-      now - i * (Math.random() * 500 + 100)
-    ).toISOString();
+    const speed = Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
+    const timestamp = new Date(now - i * (Math.random() * 500 + 100)).toISOString();
 
     events.push({
       timestamp,
@@ -201,11 +171,7 @@ export async function getRealtimeVehicleEvents(
     });
   }
 
-  return Promise.resolve(
-    events.sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )
-  );
+  return Promise.resolve(events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
 }
 
 export async function getRoutePrediction(input: PredictRouteInput): Promise<PredictRouteOutput> {
@@ -214,46 +180,42 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
         return prediction;
     } catch (error) {
         console.error('AI route prediction failed:', error);
-        // Fallback to a simple estimation if AI fails
-        let time, explanation, transportSuggestion, weatherInfo, advisory, comfort;
+        let time, explanation, transportSuggestion, comfort;
         
-        weatherInfo = `Weather is ${input.weather} at ${input.temperature}°C. Drive with caution.`;
-        advisory = "Please check local Ganjil-Genap regulations for today.";
-
         switch (input.trafficStatus) {
             case 'Smooth': 
                 time = '15-25'; 
-                explanation = "With smooth traffic, your trip should be relatively quick.";
-                transportSuggestion = "Private car or motorcycle recommended.";
+                explanation = "Light traffic detected. Routes are clear.";
+                transportSuggestion = "Private vehicle or Ojek is efficient.";
                 comfort = 9;
                 break;
             case 'Moderate': 
-                time = '30-45'; 
-                explanation = "Expect some slowdowns on major arteries.";
-                transportSuggestion = "Ojek online or MRT is a good alternative.";
+                time = '35-50'; 
+                explanation = "Expect typical delays on arterial roads.";
+                transportSuggestion = "TransJakarta might be faster in dedicated lanes.";
                 comfort = 6;
                 break;
             case 'Heavy': 
-                time = '50-80';
-                explanation = "Significant delays expected. Avoid travel if possible.";
-                transportSuggestion = "Public transport (Busway/MRT) is highly recommended.";
+                time = '60-90';
+                explanation = "Major gridlock reported. Significant delays ahead.";
+                transportSuggestion = "MRT or KRL is strongly advised to bypass traffic.";
                 comfort = 2;
                 break;
             default: 
-                time = '20-40';
-                explanation = "Traffic impact is uncertain.";
-                transportSuggestion = "Check live maps for the latest info.";
+                time = '30-45';
+                explanation = "Standard city travel times apply.";
+                transportSuggestion = "Check live maps before departure.";
                 comfort = 5;
         }
         
         return {
             predictedTravelTime: `${time} minutes`,
-            suggestedRoute: `Major arteries via Jl. Sudirman/Thamrin`,
-            distance: 'Approx. 12 km',
-            explanation: `Basic Estimation: ${explanation}`,
+            suggestedRoute: `Primary route via Sudirman-Thamrin corridor`,
+            distance: 'Approx. 10.5 km',
+            explanation: `Estimation: ${explanation}`,
             transportSuggestion: transportSuggestion,
-            weatherInfo: weatherInfo,
-            travelAdvisory: advisory,
+            weatherInfo: `Journey affected by ${input.weather} conditions.`,
+            travelAdvisory: "Watch out for Ganjil-Genap zones and potential bottleneck areas.",
             comfortScore: comfort,
         }
     }
