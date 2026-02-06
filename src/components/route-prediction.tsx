@@ -9,15 +9,14 @@ import { getRoutePrediction } from '@/lib/actions';
 import { type PredictRouteOutput, type WeatherCondition } from '@/lib/types';
 import { 
   Map, 
-  Clock, 
-  Route, 
-  Milestone, 
-  Users, 
+  Car, 
+  Bike, 
+  Bus, 
   CloudSun, 
-  GitFork, 
   AlertTriangle, 
   Smile, 
-  AlertCircle
+  Info,
+  Navigation
 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -73,14 +72,14 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Map className="h-5 w-5 text-primary" />
-          Smart Route Prediction
+          <Navigation className="h-5 w-5 text-primary" />
+          Smart Multi-Modal Prediction
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="destination" className="text-muted-foreground">Where are you going?</Label>
+            <Label htmlFor="destination" className="text-muted-foreground text-xs uppercase tracking-wider font-bold">Trip Destination</Label>
             <div className="flex gap-2">
               <Input
                 id="destination"
@@ -97,47 +96,70 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
           </div>
 
           {isLoading && (
-            <div className="space-y-4 mt-4 animate-pulse">
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-16 w-full rounded-lg" />
-                <Skeleton className="h-16 w-full rounded-lg" />
-              </div>
+            <div className="space-y-4 mt-4">
               <Skeleton className="h-24 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
+              <div className="grid grid-cols-3 gap-3">
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+              </div>
             </div>
           )}
 
           {prediction && !isLoading && (
             <div className="mt-4 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
               
-              {/* Main Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Clock className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground leading-none mb-1">Travel Time</p>
-                    <p className="text-lg font-bold">{prediction.predictedTravelTime}</p>
-                  </div>
+              {/* Distance and Route */}
+              <div className="flex justify-between items-center p-3 rounded-lg bg-primary/5 border">
+                <div>
+                  <p className="text-xs text-muted-foreground">Estimated Distance</p>
+                  <p className="font-bold">{prediction.distance}</p>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10">
-                  <div className="p-2 rounded-full bg-accent/10">
-                    <Milestone className="h-5 w-5 text-accent" />
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Suggested Road</p>
+                  <p className="font-bold">{prediction.suggestedRoute}</p>
+                </div>
+              </div>
+
+              {/* Multi-Modal Predictions */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Car */}
+                <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Car className="h-4 w-4 text-blue-500" />
+                    <span className="text-xs font-bold uppercase">Mobil</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground leading-none mb-1">Distance</p>
-                    <p className="text-lg font-bold">{prediction.distance}</p>
+                  <p className="text-lg font-bold">{prediction.predictions.car.time}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight italic">{prediction.predictions.car.insight}</p>
+                </div>
+
+                {/* Motorcycle */}
+                <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Bike className="h-4 w-4 text-orange-500" />
+                    <span className="text-xs font-bold uppercase">Motor</span>
                   </div>
+                  <p className="text-lg font-bold">{prediction.predictions.motorcycle.time}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight italic">{prediction.predictions.motorcycle.insight}</p>
+                </div>
+
+                {/* Public Transport */}
+                <div className="p-3 rounded-xl bg-green-500/5 border border-green-500/10 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Bus className="h-4 w-4 text-green-500" />
+                    <span className="text-xs font-bold uppercase">Public</span>
+                  </div>
+                  <p className="text-lg font-bold">{prediction.predictions.publicTransport.time}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight italic">{prediction.predictions.publicTransport.insight}</p>
                 </div>
               </div>
 
               {/* Comfort Score */}
-              <div className="space-y-2 px-1">
+              <div className="space-y-2 bg-muted/30 p-4 rounded-xl">
                 <div className="flex justify-between items-center text-sm font-medium">
                   <span className="flex items-center gap-1">
                     <Smile className="h-4 w-4 text-muted-foreground" />
-                    Trip Comfort Score
+                    Journey Comfort Score
                   </span>
                   <span className={cn(
                     "px-2 py-0.5 rounded text-xs font-bold",
@@ -148,54 +170,34 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                     {prediction.comfortScore}/10
                   </span>
                 </div>
-                <Progress value={prediction.comfortScore * 10} className="h-2" />
+                <Progress value={prediction.comfortScore * 10} className="h-1.5" />
               </div>
 
-              {/* Insights List */}
-              <div className="space-y-3 rounded-2xl border bg-muted/30 p-4">
-                <div className="flex items-start gap-3">
-                  <Route className="h-5 w-5 mt-0.5 text-blue-500" />
+              {/* Detailed Insights */}
+              <div className="grid gap-4">
+                <div className="flex gap-3">
+                  <CloudSun className="h-5 w-5 text-sky-500 shrink-0" />
                   <div>
-                    <p className="text-sm font-bold">Suggested: {prediction.suggestedRoute}</p>
-                    {prediction.alternativeRoute && (
-                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                        <GitFork className="h-3 w-3" />
-                        Alt: {prediction.alternativeRoute}
-                      </p>
-                    )}
+                    <p className="text-xs font-bold text-muted-foreground uppercase">Weather Impact</p>
+                    <p className="text-sm">{prediction.weatherImpact}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 mt-0.5 text-amber-500" />
+                <div className="flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
                   <div>
-                    <p className="text-sm font-bold">Travel Advisory</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{prediction.travelAdvisory}</p>
+                    <p className="text-xs font-bold text-muted-foreground uppercase">Travel Advisory</p>
+                    <p className="text-sm">{prediction.travelAdvisory}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <CloudSun className="h-5 w-5 mt-0.5 text-sky-500" />
+                <div className="flex gap-3">
+                  <Info className="h-5 w-5 text-indigo-500 shrink-0" />
                   <div>
-                    <p className="text-sm font-bold">Weather Impact</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{prediction.weatherInfo}</p>
+                    <p className="text-xs font-bold text-muted-foreground uppercase">Summary</p>
+                    <p className="text-sm italic text-muted-foreground">{prediction.explanation}</p>
                   </div>
                 </div>
-
-                <div className="flex items-start gap-3">
-                  <Users className="h-5 w-5 mt-0.5 text-indigo-500" />
-                  <div>
-                    <p className="text-sm font-bold">Transport Tip</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{prediction.transportSuggestion}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border-l-4 border-primary">
-                <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <p className="text-xs text-foreground italic leading-relaxed">
-                  {prediction.explanation}
-                </p>
               </div>
             </div>
           )}

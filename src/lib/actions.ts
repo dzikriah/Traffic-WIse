@@ -42,7 +42,6 @@ export async function runSimulationStep(
     ? previousData
     : initialTrafficData;
 
-  // 1. Simulate new traffic volumes with randomness
   const carChange = Math.floor(Math.random() * 50) - 20;
   const motorcycleChange = Math.floor(Math.random() * 70) - 30;
 
@@ -54,7 +53,6 @@ export async function runSimulationStep(
 
   const newTotalVolume = newCarVolume + newMotorcycleVolume;
 
-  // 2. Simulate new average speed
   const baseSpeed = 70;
   const reductionPerVehicle = 0.08;
   let newAverageSpeed = baseSpeed - newTotalVolume * reductionPerVehicle;
@@ -63,7 +61,6 @@ export async function runSimulationStep(
 
   const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-  // 3. Get weather data with dynamic fluctuations and forced variety
   let weatherData = {
     weather: currentData.weather,
     temperature: currentData.temperature,
@@ -75,7 +72,6 @@ export async function runSimulationStep(
       currentWeather: currentData.weather
     });
     
-    // Safety check: Ensure temperature matches weather rules even if AI is slightly off
     let finalTemp = aiWeather.temperature;
     if ((aiWeather.weather === 'Rainy' || aiWeather.weather === 'Thunderstorm') && finalTemp > 26) {
         finalTemp = 24 + (Math.random() * 1.8);
@@ -98,11 +94,9 @@ export async function runSimulationStep(
     } else if (weatherData.weather === 'Sunny') {
       targetTemp = Math.max(targetTemp, 30.5);
     }
-
     weatherData.temperature = Math.round((targetTemp + drift) * 10) / 10;
   }
 
-  // 4. Generate AI-powered congestion analysis
   let analysis = {
     congestion_factor: 'Analysis pending...',
     explanation: 'Awaiting AI analysis...',
@@ -136,7 +130,7 @@ export async function runSimulationStep(
     console.error('AI analysis failed:', error);
     analysis = {
       congestion_factor: `System Baseline: ${newTrafficStatus}`,
-      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with a total of ${newTotalVolume} vehicles. Average speed is currently ${Math.round(newAverageSpeed)} km/h under ${weatherData.weather.toLowerCase()} skies.`,
+      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with ${newTotalVolume} vehicles.`,
     };
   }
 
@@ -197,43 +191,22 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
         return prediction;
     } catch (error) {
         console.error('AI route prediction failed:', error);
-        let time, explanation, transportSuggestion, comfort;
         
-        switch (input.trafficStatus) {
-            case 'Smooth': 
-                time = '15-25'; 
-                explanation = "Light traffic detected. Routes are clear.";
-                transportSuggestion = "Private vehicle or Ojek is efficient.";
-                comfort = 9;
-                break;
-            case 'Moderate': 
-                time = '35-50'; 
-                explanation = "Expect typical delays on arterial roads.";
-                transportSuggestion = "TransJakarta might be faster in dedicated lanes.";
-                comfort = 6;
-                break;
-            case 'Heavy': 
-                time = '60-90';
-                explanation = "Major gridlock reported. Significant delays ahead.";
-                transportSuggestion = "MRT or KRL is strongly advised to bypass traffic.";
-                comfort = 2;
-                break;
-            default: 
-                time = '30-45';
-                explanation = "Standard city travel times apply.";
-                transportSuggestion = "Check live maps before departure.";
-                comfort = 5;
-        }
-        
+        const isRainy = input.weather === 'Rainy' || input.weather === 'Thunderstorm';
+        const trafficFactor = input.trafficStatus === 'Heavy' ? 3 : input.trafficStatus === 'Moderate' ? 1.5 : 1;
+
         return {
-            predictedTravelTime: `${time} minutes`,
-            suggestedRoute: `Primary route via Sudirman-Thamrin corridor`,
-            distance: 'Approx. 10.5 km',
-            explanation: `Estimation: ${explanation}`,
-            transportSuggestion: transportSuggestion,
-            weatherInfo: `Journey affected by ${input.weather} conditions (${input.temperature}°C).`,
-            travelAdvisory: "Watch out for Ganjil-Genap zones and potential bottleneck areas.",
-            comfortScore: comfort,
+            distance: '10.5 km',
+            predictions: {
+              car: { time: `${Math.round(25 * trafficFactor)}-${Math.round(35 * trafficFactor)} mins`, insight: "Expect delays on main roads." },
+              motorcycle: { time: `${Math.round(20 * trafficFactor)}-${Math.round(28 * trafficFactor)} mins`, insight: isRainy ? "Rain significantly slows motorcycles." : "Faster filtering through queues." },
+              publicTransport: { time: "40-50 mins", insight: "MRT/TransJakarta is traffic-immune but takes longer." },
+            },
+            suggestedRoute: `Sudirman-Thamrin Corridor`,
+            explanation: `Baseline estimation for ${input.trafficStatus} conditions.`,
+            weatherImpact: isRainy ? "Heavy rain will cause pooling and slow all surface transport." : "Clear weather favors motorcycles and open routes.",
+            travelAdvisory: "Check for Ganjil-Genap rules and active construction zones.",
+            comfortScore: input.trafficStatus === 'Heavy' ? 3 : 7,
         }
     }
 }
