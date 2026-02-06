@@ -38,10 +38,12 @@ Location: {{{location}}}
 
 Instructions:
 1. The weather can only be one of 'Sunny', 'Cloudy', 'Rainy', or 'Thunderstorm'.
-2. The temperature should be realistic for Jakarta (range between 24°C at night/rain to 34°C in a hot day).
-3. Do not always return 30°C. Vary the output based on common weather patterns. 
-   - If 'Rainy' or 'Thunderstorm', temperatures should be lower (24-27°C).
-   - If 'Sunny', temperatures should be higher (30-34°C).
+2. The temperature should be realistic for Jakarta or similar tropical cities.
+3. Range requirements:
+   - If 'Sunny', temperatures should be higher (30°C - 34°C).
+   - If 'Cloudy', temperatures should be moderate (27°C - 29°C).
+   - If 'Rainy' or 'Thunderstorm', temperatures MUST be lower (24°C - 26°C).
+4. Do not always return the same values. Vary the output significantly based on these conditions.
 
 Respond with valid JSON.`,
 });

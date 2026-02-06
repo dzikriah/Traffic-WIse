@@ -71,18 +71,27 @@ export async function runSimulationStep(
   
   try {
     const aiWeather = await getWeather({ location: currentData.location });
-    // Add a small jitter (-0.5 to +0.5) to make it feel "live" and avoid getting "stuck"
-    const jitter = (Math.random() - 0.5);
+    // Add a small jitter (-0.3 to +0.3) to make it feel "live"
+    const jitter = (Math.random() * 0.6 - 0.3);
     weatherData = {
       weather: aiWeather.weather,
       temperature: Math.round((aiWeather.temperature + jitter) * 10) / 10,
     };
   } catch (error) {
     console.error('AI weather fetch failed:', error);
-    // Drift the temperature slightly if AI fails to keep it dynamic
+    // Drift logic based on current weather if AI fails
     const drift = (Math.random() * 0.4 - 0.2);
-    weatherData.temperature = Math.round((weatherData.temperature + drift) * 10) / 10;
-    weatherData.temperature = Math.max(24, Math.min(weatherData.temperature, 35));
+    let targetTemp = weatherData.temperature;
+    
+    // Adjust target based on weather type
+    if (weatherData.weather === 'Rainy' || weatherData.weather === 'Thunderstorm') {
+      targetTemp = Math.min(targetTemp, 26);
+    } else if (weatherData.weather === 'Sunny') {
+      targetTemp = Math.max(targetTemp, 30);
+    }
+
+    weatherData.temperature = Math.round((targetTemp + drift) * 10) / 10;
+    weatherData.temperature = Math.max(23, Math.min(weatherData.temperature, 35));
   }
 
   // 4. Generate AI-powered congestion analysis
@@ -119,7 +128,7 @@ export async function runSimulationStep(
     console.error('AI analysis failed:', error);
     analysis = {
       congestion_factor: `System Baseline: ${newTrafficStatus}`,
-      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with a total of ${newTotalVolume} vehicles. Average speed is currently ${Math.round(newAverageSpeed)} km/h.`,
+      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with a total of ${newTotalVolume} vehicles. Average speed is currently ${Math.round(newAverageSpeed)} km/h under ${weatherData.weather.toLowerCase()} skies.`,
     };
   }
 
@@ -214,7 +223,7 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
             distance: 'Approx. 10.5 km',
             explanation: `Estimation: ${explanation}`,
             transportSuggestion: transportSuggestion,
-            weatherInfo: `Journey affected by ${input.weather} conditions.`,
+            weatherInfo: `Journey affected by ${input.weather} conditions (${input.temperature}°C).`,
             travelAdvisory: "Watch out for Ganjil-Genap zones and potential bottleneck areas.",
             comfortScore: comfort,
         }
