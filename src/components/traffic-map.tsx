@@ -5,6 +5,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { TrafficStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { useMemo } from 'react';
 
 type TrafficMapProps = {
   trafficStatus: TrafficStatus;
@@ -16,8 +17,6 @@ interface MapPoint {
   name: string;
   top: string;
   left: string;
-  // We can vary the status slightly for visual interest or keep them synced
-  offset?: number; 
 }
 
 const MONITORING_POINTS: MapPoint[] = [
@@ -33,6 +32,28 @@ const MONITORING_POINTS: MapPoint[] = [
 
 export default function TrafficMap({ trafficStatus, location }: TrafficMapProps) {
   const mapImage = PlaceHolderImages.find((img) => img.id === 'jakarta-map');
+
+  // Logic to vary point status based on global status to look more realistic
+  const pointsWithStatus = useMemo(() => {
+    return MONITORING_POINTS.map((point, index) => {
+      let localStatus: TrafficStatus = trafficStatus;
+      
+      // Introduce variance based on global state
+      if (trafficStatus === 'Smooth') {
+        // Mostly smooth, some moderate
+        if (index % 3 === 0) localStatus = 'Moderate';
+      } else if (trafficStatus === 'Moderate') {
+        // Mix of smooth, moderate, and heavy
+        if (index % 4 === 0) localStatus = 'Heavy';
+        if (index % 3 === 0) localStatus = 'Smooth';
+      } else if (trafficStatus === 'Heavy') {
+        // Mostly heavy, some moderate
+        if (index % 3 === 0) localStatus = 'Moderate';
+      }
+      
+      return { ...point, localStatus };
+    });
+  }, [trafficStatus]);
 
   return (
     <Card className="h-full border-primary/10 shadow-lg">
@@ -70,25 +91,25 @@ export default function TrafficMap({ trafficStatus, location }: TrafficMapProps)
           
           {/* Monitoring Points Overlay */}
           <div className="absolute inset-0 z-10 pointer-events-none">
-            {MONITORING_POINTS.map((point) => (
+            {pointsWithStatus.map((point) => (
               <div
                 key={point.id}
                 className={cn(
                   'absolute w-3.5 h-3.5 rounded-full border-2 border-white shadow-xl transition-all duration-700 ease-in-out',
                   {
-                    'bg-green-500 scale-100': trafficStatus === 'Smooth',
-                    'bg-amber-500 scale-110': trafficStatus === 'Moderate',
-                    'bg-red-500 scale-125 animate-pulse-deep': trafficStatus === 'Heavy',
+                    'bg-green-500 scale-100': point.localStatus === 'Smooth',
+                    'bg-amber-500 scale-110': point.localStatus === 'Moderate',
+                    'bg-red-500 scale-125 animate-pulse-deep': point.localStatus === 'Heavy',
                   }
                 )}
                 style={{ top: point.top, left: point.left }}
-                title={`${point.name}: ${trafficStatus}`}
+                title={`${point.name}: ${point.localStatus}`}
               >
                 <div className={cn(
                   "absolute inset-0 rounded-full opacity-30",
-                  trafficStatus === 'Smooth' && "bg-green-400 animate-ping",
-                  trafficStatus === 'Moderate' && "bg-amber-400 animate-ping",
-                  trafficStatus === 'Heavy' && "bg-red-400 animate-ping"
+                  point.localStatus === 'Smooth' && "bg-green-400 animate-ping",
+                  point.localStatus === 'Moderate' && "bg-amber-400 animate-ping",
+                  point.localStatus === 'Heavy' && "bg-red-400 animate-ping"
                 )} />
               </div>
             ))}
