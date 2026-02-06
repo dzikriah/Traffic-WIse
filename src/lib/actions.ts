@@ -6,6 +6,7 @@ import {
 } from '@/ai/flows/explain-traffic-changes';
 import { getWeather } from '@/ai/flows/get-weather';
 import { predictRoute } from '@/ai/flows/predict-route-flow';
+import { trafficChat, type TrafficChatOutput } from '@/ai/flows/traffic-chat-flow';
 import type {
   TrafficData,
   TrafficStatus,
@@ -114,7 +115,7 @@ export async function runSimulationStep(
       currentTrafficStatus: newTrafficStatus,
       timestamp: new Date().toISOString(),
       carVolume: newCarVolume,
-      motorcycle_volume: newMotorcycleVolume,
+      motorcycleVolume: newMotorcycleVolume,
       weather: weatherData.weather,
       temperature: weatherData.temperature,
     };
@@ -224,4 +225,14 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
             comfortScore: input.trafficStatus === 'Heavy' ? 3 : 7,
         }
     }
+}
+
+export async function chatWithTrafficAI(message: string, trafficData: TrafficData): Promise<TrafficChatOutput> {
+  return trafficChat({
+    message,
+    location: trafficData.location,
+    trafficStatus: trafficData.traffic_status,
+    weather: trafficData.weather,
+    temperature: trafficData.temperature,
+  });
 }
