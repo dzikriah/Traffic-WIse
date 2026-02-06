@@ -22,27 +22,28 @@ const predictRoutePrompt = ai.definePrompt({
   name: 'predictRoutePrompt',
   input: {schema: PredictRouteInputSchema},
   output: {schema: PredictRouteOutputSchema},
-  prompt: `You are a Jakarta traffic expert AI. Provide highly insightful multi-modal route predictions in English.
+  prompt: `You are a Senior Jakarta Traffic Consultant AI. Your goal is to provide highly sophisticated, multi-modal route predictions in English.
 
   **Context:**
-  - Start: {{{location}}}
-  - Destination: {{{destination}}}
-  - Traffic: {{{trafficStatus}}}
-  - Weather: {{{weather}}}, {{{temperature}}}°C
+  - **Start**: {{{location}}}
+  - **Destination**: {{{destination}}}
+  - **Traffic Condition**: {{{trafficStatus}}}
+  - **Weather**: {{{weather}}}, {{{temperature}}}°C
 
-  **Requirements:**
+  **Instructions for Outputs:**
   1. **predictions**:
-     - **car**: Account for congestion and Ganjil-Genap (Odd-Even) rules. Include fuel/parking cost estimates.
-     - **motorcycle**: Account for filtering ability but higher impact from rain/heat. Include Ojek-online style cost estimates.
-     - **publicTransport**: Suggest TransJakarta, MRT, or LRT where applicable. Use standard flat fares for costs.
-  2. **bestMode**: Choose the most logical mode (balancing time, cost, and current weather).
-  3. **distance**: Estimate total distance in KM.
-  4. **suggestedRoute**: Primary road corridor.
-  5. **weatherImpact**: Specifics on how the current weather affects each mode (e.g., "Rainy weather significantly increases motorcycle risk").
-  6. **travelAdvisory**: Mention Jakarta-specific rules (Odd-Even, active construction, flood risks).
-  7. **peakTimeAdvisory**: Based on typical Jakarta patterns, will it get better or worse soon?
-  8. **comfortScore**: 1-10 rating for the overall journey quality.
-  9. **explanation**: Provide a concise "Executive Summary" of why you chose the bestMode.
+     - **car**: Factor in Jakarta's Ganjil-Genap (Odd-Even) rules based on common knowledge of major corridors. Include realistic fuel/toll/parking cost estimates.
+     - **motorcycle**: Factor in "filtering" through queues but emphasize risks/delays during rain or extreme heat.
+     - **publicTransport**: Be specific (e.g., "Take TransJakarta Corridor 1" or "MRT North-South line"). Use standard flat fares (Rp 3,500 - 14,000).
+  2. **bestMode**: Select the objectively superior mode based on a balance of time efficiency, cost, and physical comfort given the current weather.
+  3. **distance**: Provide a realistic estimate in KM.
+  4. **suggestedRoute**: Name the primary road corridor (e.g., "Jl. Jend. Sudirman", "Tol Dalam Kota").
+  5. **weatherImpact**: How does the {{{weather}}} specifically affect visibility, road grip, or passenger comfort for each mode?
+  6. **travelAdvisory**: Critical local context (e.g., "Semanggi interchange construction", "Flood risk near Grogol", "Odd-Even today").
+  7. **peakTimeAdvisory**: Predict the trend for the next 60 minutes (e.g., "Commuter peak is starting; expect speeds to drop by 40%").
+  8. **comfortScore**: 1-10 rating for the journey.
+  9. **explanation (THE TRIP SUMMARY)**: This is your most important output. Provide a **highly insightful, 2-3 sentence executive synthesis**. Do not just repeat stats. Instead, explain the 'why'. 
+     *Example*: "While the car offers a dry environment in this thunderstorm, the MRT is the tactical winner today as it bypasses the predicted 45-minute congestion at the Kuningan intersection, saving you nearly half the travel time for a fraction of the cost."
 
   Respond with a valid JSON object in English only.`,
 });
