@@ -14,6 +14,7 @@ import {
   Cloudy,
   CloudRain,
   Zap,
+  Search,
 } from 'lucide-react';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import TrafficCard from '@/components/traffic-card';
@@ -23,6 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import DataLog from './data-log';
 import TrafficMap from './traffic-map';
 import RoutePrediction from './route-prediction';
@@ -48,7 +51,6 @@ const weatherIcons: Record<WeatherCondition, React.ReactNode> = {
   Thunderstorm: <Zap className="h-6 w-6 text-muted-foreground" />,
 };
 
-
 export default function Dashboard() {
   const [trafficData, setTrafficData] =
     useState<TrafficData>(initialTrafficData);
@@ -56,6 +58,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isClient, setIsClient] = useState(false);
+  const [locationInput, setLocationInput] = useState(initialTrafficData.location);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function Dashboard() {
   const isLoadingRef = useRef(isLoading);
   isLoadingRef.current = isLoading;
 
-  const runStep = useCallback(async () => {
+  const runStep = useCallback(async (forcedLocation?: string) => {
     const forDashboard = activeTabRef.current === 'dashboard' || activeTabRef.current === 'map';
     if (forDashboard && !isLoadingRef.current) {
       setIsLoading(true);
@@ -80,7 +83,11 @@ export default function Dashboard() {
     }
 
     try {
-      const newData = await runSimulationStep(trafficDataRef.current);
+      const baseData = forcedLocation 
+        ? { ...trafficDataRef.current, location: forcedLocation } 
+        : trafficDataRef.current;
+      
+      const newData = await runSimulationStep(baseData);
       setTrafficData(newData);
       const time = new Date(newData.timestamp).toLocaleTimeString([], {
         hour: '2-digit',
@@ -111,15 +118,34 @@ export default function Dashboard() {
     return () => clearInterval(intervalId);
   }, [runStep]);
 
+  const handleLocationUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!locationInput.trim()) return;
+    
+    toast({
+      title: "Updating Location",
+      description: `Switching monitor to ${locationInput}...`,
+    });
+    
+    runStep(locationInput);
+  };
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-6 w-6 text-muted-foreground" />
-          <h2 className="text-xl font-semibold text-foreground">
-            {trafficData.location}
-          </h2>
-        </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <form onSubmit={handleLocationUpdate} className="flex items-center gap-2 w-full md:w-auto bg-muted/30 p-1 rounded-lg border">
+          <MapPin className="h-5 w-5 text-muted-foreground ml-2" />
+          <Input 
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+            placeholder="Search road name..."
+            className="border-none bg-transparent focus-visible:ring-0 h-9 w-full md:w-64 text-sm font-medium"
+          />
+          <Button type="submit" size="sm" variant="ghost" className="h-8">
+            <Search className="h-4 w-4 mr-2" />
+            Update
+          </Button>
+        </form>
         <TabsList>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="route-prediction">Route Prediction</TabsTrigger>
