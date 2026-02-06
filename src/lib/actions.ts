@@ -31,8 +31,8 @@ const initialTrafficData: TrafficData = {
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
-  weather: 'Sunny',
-  temperature: 30.5,
+  weather: 'Cloudy',
+  temperature: 27.5,
 };
 
 export async function runSimulationStep(
@@ -63,35 +63,43 @@ export async function runSimulationStep(
 
   const newTrafficStatus = getTrafficStatus(newTotalVolume);
 
-  // 3. Get weather data with dynamic fluctuations
+  // 3. Get weather data with dynamic fluctuations and forced variety
   let weatherData = {
     weather: currentData.weather,
     temperature: currentData.temperature,
   };
   
   try {
-    const aiWeather = await getWeather({ location: currentData.location });
-    // Add a small jitter (-0.3 to +0.3) to make it feel "live"
-    const jitter = (Math.random() * 0.6 - 0.3);
+    const aiWeather = await getWeather({ 
+      location: currentData.location,
+      currentWeather: currentData.weather
+    });
+    
+    // Safety check: Ensure temperature matches weather rules even if AI is slightly off
+    let finalTemp = aiWeather.temperature;
+    if ((aiWeather.weather === 'Rainy' || aiWeather.weather === 'Thunderstorm') && finalTemp > 26) {
+        finalTemp = 24 + (Math.random() * 1.8);
+    } else if (aiWeather.weather === 'Sunny' && finalTemp < 29) {
+        finalTemp = 30 + (Math.random() * 3);
+    }
+
+    const jitter = (Math.random() * 0.4 - 0.2);
     weatherData = {
       weather: aiWeather.weather,
-      temperature: Math.round((aiWeather.temperature + jitter) * 10) / 10,
+      temperature: Math.round((finalTemp + jitter) * 10) / 10,
     };
   } catch (error) {
     console.error('AI weather fetch failed:', error);
-    // Drift logic based on current weather if AI fails
     const drift = (Math.random() * 0.4 - 0.2);
     let targetTemp = weatherData.temperature;
     
-    // Adjust target based on weather type
     if (weatherData.weather === 'Rainy' || weatherData.weather === 'Thunderstorm') {
-      targetTemp = Math.min(targetTemp, 26);
+      targetTemp = Math.min(targetTemp, 25.5);
     } else if (weatherData.weather === 'Sunny') {
-      targetTemp = Math.max(targetTemp, 30);
+      targetTemp = Math.max(targetTemp, 30.5);
     }
 
     weatherData.temperature = Math.round((targetTemp + drift) * 10) / 10;
-    weatherData.temperature = Math.max(23, Math.min(weatherData.temperature, 35));
   }
 
   // 4. Generate AI-powered congestion analysis
