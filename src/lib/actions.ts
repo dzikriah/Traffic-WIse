@@ -33,7 +33,7 @@ const initialTrafficData: TrafficData = {
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
   weather: 'Cloudy',
-  temperature: 27.5,
+  temperature: 25.0,
 };
 
 export async function runSimulationStep(
@@ -73,11 +73,14 @@ export async function runSimulationStep(
       currentWeather: currentData.weather
     });
     
+    // Ensure temperature stays around 25 and respects AI constraints
     let finalTemp = aiWeather.temperature;
-    if ((aiWeather.weather === 'Rainy' || aiWeather.weather === 'Thunderstorm') && finalTemp > 26) {
-        finalTemp = 23 + (Math.random() * 3);
-    } else if (aiWeather.weather === 'Sunny' && finalTemp < 29) {
-        finalTemp = 30 + (Math.random() * 4);
+    
+    // Safety check to enforce the "around 25" rule if AI drifts too high
+    if (aiWeather.weather === 'Sunny') {
+      finalTemp = Math.min(finalTemp, 28.5);
+    } else {
+      finalTemp = Math.min(finalTemp, 26.5);
     }
 
     const jitter = (Math.random() * 0.4 - 0.2);
@@ -87,14 +90,14 @@ export async function runSimulationStep(
     };
   } catch (error) {
     console.error('AI weather fetch failed:', error);
+    // Simple drift logic towards 25.0 if AI fails
     const drift = (Math.random() * 0.4 - 0.2);
     let targetTemp = weatherData.temperature;
     
-    if (weatherData.weather === 'Rainy' || weatherData.weather === 'Thunderstorm') {
-      targetTemp = Math.min(targetTemp, 25.5);
-    } else if (weatherData.weather === 'Sunny') {
-      targetTemp = Math.max(targetTemp, 30.5);
-    }
+    // Pull towards 25.0
+    if (targetTemp > 25.5) targetTemp -= 0.1;
+    if (targetTemp < 24.5) targetTemp += 0.1;
+    
     weatherData.temperature = Math.round((targetTemp + drift) * 10) / 10;
   }
 

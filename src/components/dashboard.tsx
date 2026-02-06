@@ -41,8 +41,8 @@ const initialTrafficData: TrafficData = {
   traffic_status: 'Smooth',
   congestion_factor: 'Initializing...',
   explanation: 'System is initializing. Awaiting first simulation...',
-  weather: 'Sunny',
-  temperature: 30,
+  weather: 'Cloudy',
+  temperature: 25,
 };
 
 const weatherIcons: Record<WeatherCondition, React.ReactNode> = {

@@ -33,20 +33,20 @@ const prompt = ai.definePrompt({
   name: 'getWeatherPrompt',
   input: {schema: GetWeatherInputSchema},
   output: {schema: GetWeatherOutputSchema},
-  prompt: `You are a specialized weather simulation API for Jakarta. Your goal is to provide HIGHLY DYNAMIC weather changes.
+  prompt: `You are a specialized weather simulation API for Jakarta. Your goal is to provide HIGHLY DYNAMIC weather changes that frequently hover around 25.0°C.
 
 Location: {{{location}}}
 Current Weather Context: {{{currentWeather}}}
 
 Instructions:
-1. DO NOT always return 'Sunny'. If the current weather is 'Sunny', there is a 40% chance it should transition to 'Cloudy' or 'Rainy'.
+1. DO NOT always return 'Sunny'. Frequent transitions between 'Cloudy', 'Rainy', and 'Thunderstorm' are encouraged.
 2. The weather MUST be one of: 'Sunny', 'Cloudy', 'Rainy', or 'Thunderstorm'.
 3. **STRICT TEMPERATURE RULES (Crucial):**
-   - If 'Rainy' or 'Thunderstorm': Temperature MUST be between 23.5°C and 25.8°C.
-   - If 'Cloudy': Temperature MUST be between 26.5°C and 28.5°C.
-   - If 'Sunny': Temperature MUST be between 30.0°C and 33.5°C.
-4. If the location just changed or is being searched, feel free to start with 'Rainy' to show the variety.
-5. Provide realistic decimal values (e.g., 24.2, 25.7, 31.4).
+   - **Baseline Target: 25.0°C**. Aim for values around this target most of the time.
+   - If 'Rainy' or 'Thunderstorm': Temperature MUST be between 23.0°C and 25.5°C.
+   - If 'Cloudy': Temperature MUST be between 24.5°C and 26.5°C.
+   - If 'Sunny': Temperature MUST be between 26.5°C and 28.5°C (Do not exceed 29°C).
+4. Provide realistic decimal values (e.g., 24.8, 25.1, 25.4).
 
 Respond with valid JSON only.`,
 });
