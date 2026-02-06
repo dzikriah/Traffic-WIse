@@ -22,7 +22,7 @@ const predictRoutePrompt = ai.definePrompt({
   name: 'predictRoutePrompt',
   input: {schema: PredictRouteInputSchema},
   output: {schema: PredictRouteOutputSchema},
-  prompt: `You are a Jakarta traffic expert AI. Provide multi-modal route predictions.
+  prompt: `You are a Jakarta traffic expert AI. Provide multi-modal route predictions in English.
 
   **Context:**
   - Start: {{{location}}}
@@ -32,16 +32,17 @@ const predictRoutePrompt = ai.definePrompt({
 
   **Requirements:**
   1. **predictions**:
-     - **car**: Account for congestion and Ganjil-Genap.
-     - **motorcycle**: Account for filtering ability but higher rain impact.
+     - **car**: Account for congestion and Ganjil-Genap (Odd-Even) rules.
+     - **motorcycle**: Account for filtering ability but higher impact from rain/heat.
      - **publicTransport**: Suggest TransJakarta, MRT, or LRT where applicable.
   2. **distance**: Estimate total distance in KM.
   3. **suggestedRoute**: Primary road corridor.
-  4. **weatherImpact**: Specifics (e.g., "Rain makes motorcycle travel dangerous/slow").
-  5. **travelAdvisory**: Mention Jakarta-specific rules (Ganjil-Genap, floods).
+  4. **weatherImpact**: Specifics on how the current weather affects each mode.
+  5. **travelAdvisory**: Mention Jakarta-specific rules (Odd-Even, active construction, flood risks).
   6. **comfortScore**: 1-10 rating for the overall journey quality.
+  7. **explanation**: Provide a concise "Executive Summary" of the trip recommendation.
 
-  Respond with a valid JSON object.`,
+  Respond with a valid JSON object in English only.`,
 });
 
 const predictRouteFlow = ai.defineFlow(

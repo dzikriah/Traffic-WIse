@@ -73,10 +73,11 @@ export async function runSimulationStep(
     });
     
     let finalTemp = aiWeather.temperature;
+    // Force temperatures down for rain/storm as per requirements
     if ((aiWeather.weather === 'Rainy' || aiWeather.weather === 'Thunderstorm') && finalTemp > 26) {
-        finalTemp = 24 + (Math.random() * 1.8);
+        finalTemp = 23 + (Math.random() * 3);
     } else if (aiWeather.weather === 'Sunny' && finalTemp < 29) {
-        finalTemp = 30 + (Math.random() * 3);
+        finalTemp = 30 + (Math.random() * 4);
     }
 
     const jitter = (Math.random() * 0.4 - 0.2);
@@ -130,7 +131,7 @@ export async function runSimulationStep(
     console.error('AI analysis failed:', error);
     analysis = {
       congestion_factor: `System Baseline: ${newTrafficStatus}`,
-      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with ${newTotalVolume} vehicles.`,
+      explanation: `Current flow is ${newTrafficStatus.toLowerCase()} with ${newTotalVolume} vehicles in ${weatherData.weather.toLowerCase()} conditions.`,
     };
   }
 
@@ -193,19 +194,28 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
         console.error('AI route prediction failed:', error);
         
         const isRainy = input.weather === 'Rainy' || input.weather === 'Thunderstorm';
-        const trafficFactor = input.trafficStatus === 'Heavy' ? 3 : input.trafficStatus === 'Moderate' ? 1.5 : 1;
+        const trafficFactor = input.trafficStatus === 'Heavy' ? 2.5 : input.trafficStatus === 'Moderate' ? 1.5 : 1;
 
         return {
-            distance: '10.5 km',
+            distance: '12.4 km',
             predictions: {
-              car: { time: `${Math.round(25 * trafficFactor)}-${Math.round(35 * trafficFactor)} mins`, insight: "Expect delays on main roads." },
-              motorcycle: { time: `${Math.round(20 * trafficFactor)}-${Math.round(28 * trafficFactor)} mins`, insight: isRainy ? "Rain significantly slows motorcycles." : "Faster filtering through queues." },
-              publicTransport: { time: "40-50 mins", insight: "MRT/TransJakarta is traffic-immune but takes longer." },
+              car: { 
+                time: `${Math.round(30 * trafficFactor)}-${Math.round(45 * trafficFactor)} mins`, 
+                insight: "Check for Odd-Even (Ganjil-Genap) restrictions on main roads." 
+              },
+              motorcycle: { 
+                time: `${Math.round(20 * trafficFactor)}-${Math.round(30 * trafficFactor)} mins`, 
+                insight: isRainy ? "Heavy rain makes motorcycle travel significantly slower and riskier." : "Efficient for filtering through heavy traffic queues." 
+              },
+              publicTransport: { 
+                time: "45-55 mins", 
+                insight: "TransJakarta and MRT provide a predictable journey regardless of road congestion." 
+              },
             },
             suggestedRoute: `Sudirman-Thamrin Corridor`,
-            explanation: `Baseline estimation for ${input.trafficStatus} conditions.`,
-            weatherImpact: isRainy ? "Heavy rain will cause pooling and slow all surface transport." : "Clear weather favors motorcycles and open routes.",
-            travelAdvisory: "Check for Ganjil-Genap rules and active construction zones.",
+            explanation: `Based on current ${input.trafficStatus.toLowerCase()} traffic and ${input.weather.toLowerCase()} conditions, public transport or motorcycle (if not raining) are your best bets for speed.`,
+            weatherImpact: isRainy ? "Heavy rain will cause surface pooling and slow down all road-based transport modes." : "Clear weather is ideal for all transport modes.",
+            travelAdvisory: "Stay alert for sudden weather changes and check the latest road construction updates near your destination.",
             comfortScore: input.trafficStatus === 'Heavy' ? 3 : 7,
         }
     }
