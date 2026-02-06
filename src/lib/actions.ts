@@ -109,7 +109,7 @@ export async function runSimulationStep(
     };
   } catch (error) {
     console.error('AI analysis failed:', error);
-    // Fallback to non-AI analysis if the AI call fails
+    // Fallback logic
     const analysisByStatus = {
       Smooth: [
         {
@@ -117,44 +117,19 @@ export async function runSimulationStep(
           explanation:
             'Traffic is flowing smoothly with minimal delays. This indicates a well-balanced traffic distribution and efficient signal timing, allowing for ideal travel conditions.',
         },
-        {
-          factor: 'Light Volume',
-          explanation:
-            'Vehicle volume is significantly low, resulting in high average speeds and no notable congestion. This period is optimal for travel, with clear roads and no interruptions.',
-        },
       ],
       Moderate: [
         {
           factor: 'Increasing Density',
           explanation:
-            'Vehicle volume is steadily rising, leading to increased traffic density. This is causing minor slowdowns, particularly around major intersections and commercial areas, as the system approaches its capacity.',
-        },
-        {
-          factor: 'Intersection Queues',
-          explanation:
-            'Minor queues are beginning to form at traffic lights, suggesting that signal cycles are becoming saturated. While traffic is still moving, expect short but noticeable waiting times at key junctions.',
-        },
-        {
-          factor: 'Slight Speed Reduction',
-          explanation:
-            'A higher number of vehicles on the road is causing a discernible decrease in average travel speed. The flow is becoming less fluid as drivers adjust to the increased proximity of other vehicles.',
+            'Vehicle volume is steadily rising, leading to increased traffic density. This is causing minor slowdowns, particularly around major intersections.',
         },
       ],
       Heavy: [
         {
           factor: 'Peak Hour Congestion',
           explanation:
-            'Severe congestion is occurring due to a high volume of vehicles, typical of rush hour. This widespread slowdown is affecting both main roads and arteries, leading to significant and predictable travel delays.',
-        },
-        {
-          factor: 'Gridlock Conditions',
-          explanation:
-            'Traffic is approaching a standstill. The current volume has oversaturated the road network, causing average speeds to drop to extremely low levels. Movement is intermittent and highly restricted.',
-        },
-        {
-          factor: 'Volume Exceeds Capacity',
-          explanation:
-            "The number of vehicles has surpassed the road's designed capacity. This has resulted in a system-wide breakdown of traffic flow, characterized by widespread, slow-moving queues and exceptionally long travel times.",
+            'Severe congestion is occurring due to a high volume of vehicles, typical of rush hour. Movement is intermittent and highly restricted.',
         },
       ],
     };
@@ -202,39 +177,19 @@ export async function getRealtimeVehicleEvents(
 
     switch (trafficStatus) {
       case 'Smooth':
-        if (vehicleType === 'Car') {
-          minSpeed = 30;
-          maxSpeed = 50;
-        } else if (vehicleType === 'Motorcycle') {
-          minSpeed = 35;
-          maxSpeed = 55;
-        } else {
-          minSpeed = 20;
-          maxSpeed = 40;
-        } // Bus or Truck
+        minSpeed = 30; maxSpeed = 55;
         break;
       case 'Moderate':
-        if (vehicleType === 'Car') {
-          minSpeed = 15;
-          maxSpeed = 30;
-        } else if (vehicleType === 'Motorcycle') {
-          minSpeed = 20;
-          maxSpeed = 35;
-        } else {
-          minSpeed = 10;
-          maxSpeed = 25;
-        } // Bus or Truck
+        minSpeed = 15; maxSpeed = 35;
         break;
       case 'Heavy':
-        minSpeed = 0;
-        maxSpeed = 15;
+        minSpeed = 0; maxSpeed = 15;
         break;
     }
 
     const speed =
       Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed;
 
-    // Stagger timestamps slightly to make it look more real
     const timestamp = new Date(
       now - i * (Math.random() * 500 + 100)
     ).toISOString();
@@ -260,44 +215,46 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
     } catch (error) {
         console.error('AI route prediction failed:', error);
         // Fallback to a simple estimation if AI fails
-        let time, explanation, transportSuggestion, weatherInfo;
+        let time, explanation, transportSuggestion, weatherInfo, advisory, comfort;
         
-        weatherInfo = `Weather is ${input.weather} at ${input.temperature}°C. This may affect travel conditions.`;
+        weatherInfo = `Weather is ${input.weather} at ${input.temperature}°C. Drive with caution.`;
+        advisory = "Please check local Ganjil-Genap regulations for today.";
 
         switch (input.trafficStatus) {
             case 'Smooth': 
                 time = '15-25'; 
-                explanation = "With smooth traffic, your trip should be relatively quick. Main roads are the best option.";
-                transportSuggestion = "A private vehicle or motorcycle will be efficient.";
+                explanation = "With smooth traffic, your trip should be relatively quick.";
+                transportSuggestion = "Private car or motorcycle recommended.";
+                comfort = 9;
                 break;
             case 'Moderate': 
                 time = '30-45'; 
-                explanation = "Expect some slowdowns due to moderate traffic, particularly on major arteries. Plan for some extra time.";
-                transportSuggestion = "Consider using a ride-hailing service to avoid parking hassles. The MRT is also a good alternative for routes it covers.";
+                explanation = "Expect some slowdowns on major arteries.";
+                transportSuggestion = "Ojek online or MRT is a good alternative.";
+                comfort = 6;
                 break;
             case 'Heavy': 
-                time = '50-70';
-                explanation = "Significant delays are likely due to heavy congestion. It's advisable to postpone travel or seek alternative routes if possible.";
-                transportSuggestion = "Public transport like the TransJakarta busway or MRT is strongly recommended to bypass the worst of the traffic.";
+                time = '50-80';
+                explanation = "Significant delays expected. Avoid travel if possible.";
+                transportSuggestion = "Public transport (Busway/MRT) is highly recommended.";
+                comfort = 2;
                 break;
             default: 
                 time = '20-40';
-                explanation = "Traffic impact is uncertain, but a general travel estimate is provided.";
-                transportSuggestion = "Check a live map before departing to choose the best transport method.";
+                explanation = "Traffic impact is uncertain.";
+                transportSuggestion = "Check live maps for the latest info.";
+                comfort = 5;
         }
         
-        if (input.weather === 'Rainy' || input.weather === 'Thunderstorm') {
-            transportSuggestion += " A car or public transport is preferable to a motorcycle in the rain."
-        }
-
         return {
             predictedTravelTime: `${time} minutes`,
-            suggestedRoute: `Main roads (e.g., Jl. Sudirman)`,
-            distance: 'Not available',
-            explanation: `AI prediction is currently unavailable. ${explanation}`,
+            suggestedRoute: `Major arteries via Jl. Sudirman/Thamrin`,
+            distance: 'Approx. 12 km',
+            explanation: `Basic Estimation: ${explanation}`,
             transportSuggestion: transportSuggestion,
             weatherInfo: weatherInfo,
-            // alternativeRoute is optional, so it can be omitted in the fallback.
+            travelAdvisory: advisory,
+            comfortScore: comfort,
         }
     }
 }

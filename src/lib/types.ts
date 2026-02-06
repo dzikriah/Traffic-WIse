@@ -48,5 +48,7 @@ export const PredictRouteOutputSchema = z.object({
     transportSuggestion: z.string().describe('A suggestion for the best mode of transport (e.g., "Private car recommended", "Consider using the MRT to avoid rain and traffic.").'),
     weatherInfo: z.string().describe('A brief note on how the current weather might impact the journey.'),
     alternativeRoute: z.string().optional().describe('An optional alternative route.'),
+    travelAdvisory: z.string().describe('Specific Jakarta context like Ganjil-Genap rules, construction zones, or flood risks.'),
+    comfortScore: z.number().min(1).max(10).describe('A score from 1-10 indicating the comfort/ease of the trip.'),
 });
 export type PredictRouteOutput = z.infer<typeof PredictRouteOutputSchema>;
