@@ -114,7 +114,7 @@ export async function runSimulationStep(
       currentTrafficStatus: newTrafficStatus,
       timestamp: new Date().toISOString(),
       carVolume: newCarVolume,
-      motorcycleVolume: newMotorcycleVolume,
+      motorcycle_volume: newMotorcycleVolume,
       weather: weatherData.weather,
       temperature: weatherData.temperature,
     };
@@ -201,21 +201,26 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
             predictions: {
               car: { 
                 time: `${Math.round(30 * trafficFactor)}-${Math.round(45 * trafficFactor)} mins`, 
-                insight: "Check for Odd-Even (Ganjil-Genap) restrictions on main roads." 
+                insight: "Check for Odd-Even (Ganjil-Genap) restrictions on main roads.",
+                cost: "Rp 35k - 60k (Fuel & Parking)"
               },
               motorcycle: { 
                 time: `${Math.round(20 * trafficFactor)}-${Math.round(30 * trafficFactor)} mins`, 
-                insight: isRainy ? "Heavy rain makes motorcycle travel significantly slower and riskier." : "Efficient for filtering through heavy traffic queues." 
+                insight: isRainy ? "Heavy rain makes motorcycle travel significantly slower and riskier." : "Efficient for filtering through heavy traffic queues.",
+                cost: "Rp 15k - 25k (Fuel)"
               },
               publicTransport: { 
                 time: "45-55 mins", 
-                insight: "TransJakarta and MRT provide a predictable journey regardless of road congestion." 
+                insight: "TransJakarta and MRT provide a predictable journey regardless of road congestion.",
+                cost: "Rp 3.5k - 14k (Flat rate)"
               },
             },
+            bestMode: isRainy ? 'publicTransport' : (input.trafficStatus === 'Heavy' ? 'motorcycle' : 'car'),
             suggestedRoute: `Sudirman-Thamrin Corridor`,
             explanation: `Based on current ${input.trafficStatus.toLowerCase()} traffic and ${input.weather.toLowerCase()} conditions, public transport or motorcycle (if not raining) are your best bets for speed.`,
             weatherImpact: isRainy ? "Heavy rain will cause surface pooling and slow down all road-based transport modes." : "Clear weather is ideal for all transport modes.",
             travelAdvisory: "Stay alert for sudden weather changes and check the latest road construction updates near your destination.",
+            peakTimeAdvisory: "Traffic is currently stable but expected to increase as evening peak hour approaches.",
             comfortScore: input.trafficStatus === 'Heavy' ? 3 : 7,
         }
     }

@@ -22,7 +22,7 @@ const predictRoutePrompt = ai.definePrompt({
   name: 'predictRoutePrompt',
   input: {schema: PredictRouteInputSchema},
   output: {schema: PredictRouteOutputSchema},
-  prompt: `You are a Jakarta traffic expert AI. Provide multi-modal route predictions in English.
+  prompt: `You are a Jakarta traffic expert AI. Provide highly insightful multi-modal route predictions in English.
 
   **Context:**
   - Start: {{{location}}}
@@ -32,15 +32,17 @@ const predictRoutePrompt = ai.definePrompt({
 
   **Requirements:**
   1. **predictions**:
-     - **car**: Account for congestion and Ganjil-Genap (Odd-Even) rules.
-     - **motorcycle**: Account for filtering ability but higher impact from rain/heat.
-     - **publicTransport**: Suggest TransJakarta, MRT, or LRT where applicable.
-  2. **distance**: Estimate total distance in KM.
-  3. **suggestedRoute**: Primary road corridor.
-  4. **weatherImpact**: Specifics on how the current weather affects each mode.
-  5. **travelAdvisory**: Mention Jakarta-specific rules (Odd-Even, active construction, flood risks).
-  6. **comfortScore**: 1-10 rating for the overall journey quality.
-  7. **explanation**: Provide a concise "Executive Summary" of the trip recommendation.
+     - **car**: Account for congestion and Ganjil-Genap (Odd-Even) rules. Include fuel/parking cost estimates.
+     - **motorcycle**: Account for filtering ability but higher impact from rain/heat. Include Ojek-online style cost estimates.
+     - **publicTransport**: Suggest TransJakarta, MRT, or LRT where applicable. Use standard flat fares for costs.
+  2. **bestMode**: Choose the most logical mode (balancing time, cost, and current weather).
+  3. **distance**: Estimate total distance in KM.
+  4. **suggestedRoute**: Primary road corridor.
+  5. **weatherImpact**: Specifics on how the current weather affects each mode (e.g., "Rainy weather significantly increases motorcycle risk").
+  6. **travelAdvisory**: Mention Jakarta-specific rules (Odd-Even, active construction, flood risks).
+  7. **peakTimeAdvisory**: Based on typical Jakarta patterns, will it get better or worse soon?
+  8. **comfortScore**: 1-10 rating for the overall journey quality.
+  9. **explanation**: Provide a concise "Executive Summary" of why you chose the bestMode.
 
   Respond with a valid JSON object in English only.`,
 });

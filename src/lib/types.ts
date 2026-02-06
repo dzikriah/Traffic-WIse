@@ -43,6 +43,7 @@ export type PredictRouteInput = z.infer<typeof PredictRouteInputSchema>;
 const ModePredictionSchema = z.object({
   time: z.string().describe('Estimated travel time (e.g., "25-35 mins").'),
   insight: z.string().describe('Short specific advice for this mode.'),
+  cost: z.string().describe('Rough cost estimate (e.g., "Rp 15k - 25k").'),
 });
 
 export const PredictRouteOutputSchema = z.object({
@@ -52,10 +53,12 @@ export const PredictRouteOutputSchema = z.object({
       motorcycle: ModePredictionSchema,
       publicTransport: ModePredictionSchema,
     }),
+    bestMode: z.enum(['car', 'motorcycle', 'publicTransport']).describe('The recommended transport mode based on current conditions.'),
     suggestedRoute: z.string().describe('The suggested primary route name.'),
     explanation: z.string().describe('An explanation for the overall recommendation.'),
     weatherImpact: z.string().describe('How weather specifically affects these modes.'),
     travelAdvisory: z.string().describe('Specific Jakarta context like Ganjil-Genap, construction, or flood risks.'),
+    peakTimeAdvisory: z.string().describe('Insight into whether traffic is expected to improve or worsen in the next hour.'),
     comfortScore: z.number().min(1).max(10).describe('A score from 1-10 indicating trip ease.'),
 });
 export type PredictRouteOutput = z.infer<typeof PredictRouteOutputSchema>;

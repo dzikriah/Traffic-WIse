@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { getRoutePrediction } from '@/lib/actions';
 import { type PredictRouteOutput, type WeatherCondition } from '@/lib/types';
 import { 
-  Map, 
   Car, 
   Bike, 
   Bus, 
@@ -17,12 +16,15 @@ import {
   Smile, 
   Info,
   Navigation,
-  ExternalLink
+  Wallet,
+  TrendingUp,
+  Star
 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 type RoutePredictionProps = {
   location: string;
@@ -70,21 +72,21 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
   };
 
   return (
-    <Card className="h-full border-primary/20 shadow-lg">
-      <CardHeader className="bg-primary/5 border-b">
+    <Card className="h-full border-primary/20 shadow-lg overflow-hidden flex flex-col">
+      <CardHeader className="bg-primary/5 border-b shrink-0">
         <CardTitle className="flex items-center gap-2 text-xl">
           <Navigation className="h-6 w-6 text-primary" />
           Smart Trip Planner
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 flex-1 overflow-auto">
         <div className="flex flex-col gap-6">
           <div className="grid gap-3">
-            <Label htmlFor="destination" className="text-muted-foreground text-xs uppercase tracking-widest font-bold">Where are you going?</Label>
+            <Label htmlFor="destination" className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold">Where are you going?</Label>
             <div className="flex gap-2">
               <Input
                 id="destination"
-                placeholder="e.g., Grand Indonesia, Soekarno-Hatta Airport..."
+                placeholder="e.g., Grand Indonesia, Soekarno-Hatta..."
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 disabled={isLoading}
@@ -100,9 +102,9 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
             <div className="space-y-6 mt-4">
               <Skeleton className="h-24 w-full rounded-xl" />
               <div className="grid grid-cols-3 gap-3">
-                <Skeleton className="h-28 w-full rounded-xl" />
-                <Skeleton className="h-28 w-full rounded-xl" />
-                <Skeleton className="h-28 w-full rounded-xl" />
+                <Skeleton className="h-40 w-full rounded-xl" />
+                <Skeleton className="h-40 w-full rounded-xl" />
+                <Skeleton className="h-40 w-full rounded-xl" />
               </div>
               <Skeleton className="h-32 w-full rounded-xl" />
             </div>
@@ -117,8 +119,11 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                   <div className="p-2 rounded-lg bg-primary text-primary-foreground shadow-sm">
                     <Info className="h-4 w-4" />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-primary uppercase tracking-tight mb-1">Trip Summary</h4>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="text-sm font-bold text-primary uppercase tracking-tight">Trip Summary</h4>
+                      <Badge variant="outline" className="bg-background/50 border-primary/20 text-[10px] py-0">AI Agent</Badge>
+                    </div>
                     <p className="text-sm leading-relaxed font-medium">
                       {prediction.explanation}
                     </p>
@@ -129,68 +134,120 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
               {/* Distance and Route */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-card border shadow-sm">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Estimated Distance</p>
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Distance</p>
                   <p className="text-2xl font-black text-foreground">{prediction.distance}</p>
                 </div>
                 <div className="p-4 rounded-xl bg-card border shadow-sm">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Primary Corridor</p>
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Corridor</p>
                   <p className="text-sm font-bold truncate" title={prediction.suggestedRoute}>{prediction.suggestedRoute}</p>
                 </div>
               </div>
 
               {/* Multi-Modal Predictions */}
               <div>
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1 mb-2 block">Travel Times by Mode</Label>
+                <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1 mb-2 block">Multi-Modal Comparison</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {/* Car */}
-                  <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/10 transition-colors">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Car className="h-4 w-4 text-blue-500" />
-                      <span className="text-[10px] font-black uppercase text-blue-600">Car</span>
+                  <div className={cn(
+                    "p-4 rounded-xl border transition-all flex flex-col gap-2 relative",
+                    prediction.bestMode === 'car' ? "bg-blue-500/10 border-blue-500/50 shadow-md ring-1 ring-blue-500/20" : "bg-muted/10 border-muted-foreground/10"
+                  )}>
+                    {prediction.bestMode === 'car' && (
+                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-1 shadow-sm">
+                        <Star className="h-3 w-3 fill-white" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Car className={cn("h-4 w-4", prediction.bestMode === 'car' ? "text-blue-500" : "text-muted-foreground")} />
+                      <span className="text-[10px] font-black uppercase">Car</span>
                     </div>
-                    <p className="text-lg font-black text-blue-700 mb-1">{prediction.predictions.car.time}</p>
-                    <p className="text-[9px] text-muted-foreground leading-tight">{prediction.predictions.car.insight}</p>
+                    <div>
+                      <p className="text-lg font-black leading-tight">{prediction.predictions.car.time}</p>
+                      <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                        <Wallet className="h-3 w-3" />
+                        <p className="text-[9px] font-medium">{prediction.predictions.car.cost}</p>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground leading-tight italic">"{prediction.predictions.car.insight}"</p>
                   </div>
 
                   {/* Motorcycle */}
-                  <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Bike className="h-4 w-4 text-orange-500" />
-                      <span className="text-[10px] font-black uppercase text-orange-600">Motor</span>
+                  <div className={cn(
+                    "p-4 rounded-xl border transition-all flex flex-col gap-2 relative",
+                    prediction.bestMode === 'motorcycle' ? "bg-orange-500/10 border-orange-500/50 shadow-md ring-1 ring-orange-500/20" : "bg-muted/10 border-muted-foreground/10"
+                  )}>
+                    {prediction.bestMode === 'motorcycle' && (
+                      <div className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-1 shadow-sm">
+                        <Star className="h-3 w-3 fill-white" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Bike className={cn("h-4 w-4", prediction.bestMode === 'motorcycle' ? "text-orange-500" : "text-muted-foreground")} />
+                      <span className="text-[10px] font-black uppercase">Motor</span>
                     </div>
-                    <p className="text-lg font-black text-orange-700 mb-1">{prediction.predictions.motorcycle.time}</p>
-                    <p className="text-[9px] text-muted-foreground leading-tight">{prediction.predictions.motorcycle.insight}</p>
+                    <div>
+                      <p className="text-lg font-black leading-tight">{prediction.predictions.motorcycle.time}</p>
+                      <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                        <Wallet className="h-3 w-3" />
+                        <p className="text-[9px] font-medium">{prediction.predictions.motorcycle.cost}</p>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground leading-tight italic">"{prediction.predictions.motorcycle.insight}"</p>
                   </div>
 
                   {/* Public Transport */}
-                  <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-colors">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Bus className="h-4 w-4 text-green-500" />
-                      <span className="text-[10px] font-black uppercase text-green-600">Public</span>
+                  <div className={cn(
+                    "p-4 rounded-xl border transition-all flex flex-col gap-2 relative",
+                    prediction.bestMode === 'publicTransport' ? "bg-green-500/10 border-green-500/50 shadow-md ring-1 ring-green-500/20" : "bg-muted/10 border-muted-foreground/10"
+                  )}>
+                    {prediction.bestMode === 'publicTransport' && (
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 shadow-sm">
+                        <Star className="h-3 w-3 fill-white" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Bus className={cn("h-4 w-4", prediction.bestMode === 'publicTransport' ? "text-green-500" : "text-muted-foreground")} />
+                      <span className="text-[10px] font-black uppercase">Public</span>
                     </div>
-                    <p className="text-lg font-black text-green-700 mb-1">{prediction.predictions.publicTransport.time}</p>
-                    <p className="text-[9px] text-muted-foreground leading-tight">{prediction.predictions.publicTransport.insight}</p>
+                    <div>
+                      <p className="text-lg font-black leading-tight">{prediction.predictions.publicTransport.time}</p>
+                      <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                        <Wallet className="h-3 w-3" />
+                        <p className="text-[9px] font-medium">{prediction.predictions.publicTransport.cost}</p>
+                      </div>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground leading-tight italic">"{prediction.predictions.publicTransport.insight}"</p>
                   </div>
                 </div>
               </div>
 
-              {/* Comfort Score */}
-              <div className="space-y-2 bg-muted/20 p-4 rounded-xl border">
-                <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Smile className="h-4 w-4" />
-                    Journey Comfort Score
-                  </span>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-xs font-black",
-                    prediction.comfortScore > 7 ? "bg-green-500/20 text-green-600 border border-green-500/30" :
-                    prediction.comfortScore > 4 ? "bg-amber-500/20 text-amber-600 border border-amber-500/30" :
-                    "bg-red-500/20 text-red-600 border border-red-500/30"
-                  )}>
-                    {prediction.comfortScore}/10
-                  </span>
+              {/* Comfort Score & Peak Advisory */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2 bg-muted/20 p-4 rounded-xl border">
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Smile className="h-4 w-4" />
+                      Comfort Score
+                    </span>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-black",
+                      prediction.comfortScore > 7 ? "bg-green-500/20 text-green-600 border border-green-500/30" :
+                      prediction.comfortScore > 4 ? "bg-amber-500/20 text-amber-600 border border-amber-500/30" :
+                      "bg-red-500/20 text-red-600 border border-red-500/30"
+                    )}>
+                      {prediction.comfortScore}/10
+                    </span>
+                  </div>
+                  <Progress value={prediction.comfortScore * 10} className="h-2 bg-muted/50" />
                 </div>
-                <Progress value={prediction.comfortScore * 10} className="h-2 bg-muted/50" />
+
+                <div className="bg-muted/20 p-4 rounded-xl border flex gap-3 items-start">
+                  <TrendingUp className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase mb-0.5">Peak Advisory</p>
+                    <p className="text-[11px] font-medium leading-tight">{prediction.peakTimeAdvisory}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Specific Insights */}
