@@ -36,13 +36,14 @@ const predictRoutePrompt = ai.definePrompt({
      - **motorcycle**: Factor in "filtering" through queues but emphasize risks/delays during rain or extreme heat.
      - **publicTransport**: Be specific (e.g., "Take TransJakarta Corridor 1" or "MRT North-South line"). Use standard flat fares (Rp 3,500 - 14,000).
   2. **bestMode**: Select the objectively superior mode based on a balance of time efficiency, cost, and physical comfort given the current weather.
-  3. **distance**: Provide a realistic estimate in KM.
+  3. **distance**: Provide a realistic estimate in KM between the start and destination.
   4. **suggestedRoute**: Name the primary road corridor (e.g., "Jl. Jend. Sudirman", "Tol Dalam Kota").
-  5. **weatherImpact**: How does the {{{weather}}} specifically affect visibility, road grip, or passenger comfort for each mode?
-  6. **travelAdvisory**: Critical local context (e.g., "Semanggi interchange construction", "Flood risk near Grogol", "Odd-Even today").
-  7. **peakTimeAdvisory**: Predict the trend for the next 60 minutes (e.g., "Commuter peak is starting; expect speeds to drop by 40%").
-  8. **comfortScore**: 1-10 rating for the journey.
-  9. **explanation (THE TRIP SUMMARY)**: This is your most important output. Provide a **highly insightful, 2-3 sentence executive synthesis**. Do not just repeat stats. Instead, explain the 'why'. 
+  5. **primaryCongestionPoint**: Identify the specific street, intersection, or interchange that is currently the main cause of traffic in this route (e.g., "Kuningan Underpass", "Tomang Interchange").
+  6. **weatherImpact**: How does the {{{weather}}} specifically affect visibility, road grip, or passenger comfort for each mode?
+  7. **travelAdvisory**: Critical local context (e.g., "Semanggi interchange construction", "Flood risk near Grogol", "Odd-Even today").
+  8. **peakTimeAdvisory**: Predict the trend for the next 60 minutes (e.g., "Commuter peak is starting; expect speeds to drop by 40%").
+  9. **comfortScore**: 1-10 rating for the journey.
+  10. **explanation (THE TRIP SUMMARY)**: This is your most important output. Provide a **highly insightful, 2-3 sentence executive synthesis**. Do not just repeat stats. Instead, explain the 'why'. 
      *Example*: "While the car offers a dry environment in this thunderstorm, the MRT is the tactical winner today as it bypasses the predicted 45-minute congestion at the Kuningan intersection, saving you nearly half the travel time for a fraction of the cost."
 
   Respond with a valid JSON object in English only.`,

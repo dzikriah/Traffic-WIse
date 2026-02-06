@@ -74,7 +74,6 @@ export async function runSimulationStep(
     });
     
     let finalTemp = aiWeather.temperature;
-    // Force temperatures down for rain/storm as per requirements
     if ((aiWeather.weather === 'Rainy' || aiWeather.weather === 'Thunderstorm') && finalTemp > 26) {
         finalTemp = 23 + (Math.random() * 3);
     } else if (aiWeather.weather === 'Sunny' && finalTemp < 29) {
@@ -218,6 +217,7 @@ export async function getRoutePrediction(input: PredictRouteInput): Promise<Pred
             },
             bestMode: isRainy ? 'publicTransport' : (input.trafficStatus === 'Heavy' ? 'motorcycle' : 'car'),
             suggestedRoute: `Sudirman-Thamrin Corridor`,
+            primaryCongestionPoint: input.trafficStatus === 'Heavy' ? "Sudirman-Thamrin Intersection" : "Normal Flow",
             explanation: `Based on current ${input.trafficStatus.toLowerCase()} traffic and ${input.weather.toLowerCase()} conditions, public transport or motorcycle (if not raining) are your best bets for speed.`,
             weatherImpact: isRainy ? "Heavy rain will cause surface pooling and slow down all road-based transport modes." : "Clear weather is ideal for all transport modes.",
             travelAdvisory: "Stay alert for sudden weather changes and check the latest road construction updates near your destination.",

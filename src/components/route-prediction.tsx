@@ -19,7 +19,9 @@ import {
   TrendingUp,
   Star,
   Sparkles,
-  MapPin
+  MapPin,
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -124,7 +126,7 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
           )}
 
           {prediction && !isLoading && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-4">
               
               {/* Executive Summary Section */}
               <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 relative overflow-hidden group hover:bg-primary/10 transition-colors">
@@ -137,8 +139,8 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex justify-between items-center">
-                      <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Executive Trip Summary</h4>
-                      <span className="text-[10px] text-muted-foreground font-medium italic">Calculated in 0.8s</span>
+                      <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Trip Insight Summary</h4>
+                      <Badge variant="outline" className="text-[9px] h-4 border-primary/30">{prediction.distance}</Badge>
                     </div>
                     <p className="text-sm leading-relaxed font-semibold text-foreground/90">
                       {prediction.explanation}
@@ -147,11 +149,23 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                 </div>
               </div>
 
+              {/* Congestion & Route Focus */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10 flex flex-col gap-1">
+                    <span className="text-[9px] font-black text-red-600 uppercase tracking-widest">Primary Congestion</span>
+                    <p className="text-xs font-bold truncate">{prediction.primaryCongestionPoint}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex flex-col gap-1">
+                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Suggested Corridor</span>
+                    <p className="text-xs font-bold truncate">{prediction.suggestedRoute}</p>
+                </div>
+              </div>
+
               {/* Multi-Modal Comparison */}
               <div>
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <Label className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Recommended Options</Label>
-                  <span className="text-[10px] text-muted-foreground font-bold">{prediction.distance} total</span>
+                  <Label className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Comparative Analysis</Label>
+                  <span className="text-[10px] text-muted-foreground font-bold">Estimated duration for {prediction.distance}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {/* Car */}
@@ -237,7 +251,7 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                   <div className="flex justify-between items-center text-[10px] font-bold uppercase text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <Smile className="h-3.5 w-3.5" />
-                      Comfort
+                      Trip Comfort
                     </span>
                     <span className="font-black text-foreground">{prediction.comfortScore}/10</span>
                   </div>
@@ -247,7 +261,7 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                 <div className="p-4 rounded-2xl bg-card border shadow-sm flex gap-3 items-start">
                   <TrendingUp className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-0.5">Peak Advisory</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-0.5">Peak Trends</p>
                     <p className="text-[10px] font-bold leading-tight line-clamp-2">{prediction.peakTimeAdvisory}</p>
                   </div>
                 </div>
@@ -258,7 +272,7 @@ export default function RoutePrediction({ location, trafficStatus, weather, temp
                 <div className="flex gap-3">
                   <CloudSun className="h-4 w-4 text-sky-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-0.5">Weather Context</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-0.5">Weather Impact</p>
                     <p className="text-[11px] text-foreground font-semibold leading-relaxed">{prediction.weatherImpact}</p>
                   </div>
                 </div>
