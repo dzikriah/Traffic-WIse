@@ -1,7 +1,11 @@
 {
-  "name": "nextn",
+  "name": "traffic-wise",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dzikriah/Traffic-WIse.git"
+  },
   "scripts": {
     "dev": "next dev -p 9002",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
